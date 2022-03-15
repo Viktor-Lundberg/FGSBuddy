@@ -13,12 +13,92 @@ import sys
 
 cwd = os.getcwd()
 
-fileFolder = cwd
+#fileFolder = cwd
 
 class FgsMaker:
     def __init__(self):
         self.filedict = {}
+        self.arkivbildare = ''
+        self.arkivbildarkod = ''
+        self.pathToFiles = ''
 
+    def inputValues (self, debug = False):
+        if debug:
+            self.arkivbildare = 'TESTARKIVBILDAREN'
+            self.arkivbildarkod = '12323213123'
+            self.pathToFiles = cwd
+            self.organisation = 'TESTORGANISATIONEN'
+            self.subfolders = False
+            self.diarienummer = '123456789'
+        else:
+            self.arkivbildare = input('Ange vilken Arkivbildare FGS-paketet avser\n> ')
+            self.organisation = input('Ange vilken organisation/myndighet som levererar FGS-paketet\n> ')
+
+            loopChecker = True
+            while loopChecker:
+                idChecker = input('1. Generera diarienummer för leveransen\n2. Ange ett diarienummer för leveransen\n3. Avsluta\n> ')
+                if idChecker == '1':
+                    self.diarienummer = str(uuid.uuid4())
+                    loopChecker = False
+                elif idChecker == '2':
+                    self.diarienummer = input('Skriv in diarienummer\n> ')
+                    loopChecker = False
+                elif idChecker == '3':
+                    return 'No Values!'
+                else:
+                    'Felaktig inmatning' 
+
+            
+            loopChecker = True
+            while loopChecker:
+                idChecker = input('1. Generera arkivbildarkod\n2. Skriv in arkivbildarkoden\n3. Avsluta\n ')
+                if idChecker == '1':
+                    self.arkivbildarkod = str(uuid.uuid4())
+                    loopChecker = False
+                elif idChecker == '2':
+                    self.arkivbildarkod = input('Skriv in arkivbildarkoden\n> ')
+                    loopChecker = False
+                elif idChecker == '3':
+                    return 'No Values!'
+                else:
+                    'Felaktig inmatning' 
+            loopChecker = True
+
+            while loopChecker:
+                print('Från vilken mapp ska man genera ett FGS-paket?')
+                pathChecker = input('1. Samma katalog som skriptet\n2. Annan katalog\n3. Avsluta\n ')
+                if pathChecker == '1':
+                    self.pathToFiles = cwd
+                    loopChecker = False
+                elif pathChecker == '2':
+                    self.pathToFiles = input('Skriv in sökväg till katalogen\n>')
+                    print(self.pathToFiles)
+                    self.pathToFiles.strip()
+                    print(self.pathToFiles)
+                    if os.path.exists(self.pathToFiles):
+                        print(self.pathToFiles)
+                        loopChecker = False
+                    else:
+                        print('Felaktig sökväg')
+                elif pathChecker == '3':
+                    return 'No Values!'
+                else:
+                    'Felaktig inmatning'
+            loopChecker = True
+
+            subfolders = input('Ska även underkataloger inkluderas i FGS-paketet?\n 1. Nej 2. Ja\n>')
+            while loopChecker:
+                if subfolders == '1':
+                    self.subfolders = False
+                    loopChecker = False
+                elif subfolders == '2':
+                    self.subfolders = True
+                    loopChecker = False
+                else:
+                    continue    
+            loopChecker = True
+
+ 
     def createSip(self):
         filedict = self.filedict
         ns = {'mets' : 'http://www.loc.gov/METS/',
@@ -44,8 +124,8 @@ class FgsMaker:
         agentArkivbildare = etree.SubElement(metsHdr, str(QName(ns.get('mets'),'agent')))
         agentArkivbildare.set('ROLE', "ARCHIVIST")
         agentArkivbildare.set('TYPE', "ORGANIZATION")
-        namelement = etree.SubElement(agentArkivbildare, str(QName(ns.get('mets'), 'name'))).text = 'INPUT! TESTARKIVBILDAREN' 
-        identitetselement = etree.SubElement(agentArkivbildare, str(QName(ns.get('mets'), 'note'))).text = 'INPUT! UNIK KOD FÖR AB' 
+        namelement = etree.SubElement(agentArkivbildare, str(QName(ns.get('mets'), 'name'))).text = self.arkivbildare
+        identitetselement = etree.SubElement(agentArkivbildare, str(QName(ns.get('mets'), 'note'))).text = self.arkivbildarkod
         
         agentLevererandeSystem = etree.SubElement(metsHdr, str(QName(ns.get('mets'),'agent')))
         agentLevererandeSystem.set('ROLE', "ARCHIVIST")
@@ -56,12 +136,12 @@ class FgsMaker:
         agentLevererandeOrganisation = etree.SubElement(metsHdr, str(QName(ns.get('mets'),'agent')))
         agentLevererandeOrganisation.set('ROLE', "CREATOR")
         agentLevererandeOrganisation.set('TYPE', "ORGANIZATION")
-        namelement = etree.SubElement(agentLevererandeOrganisation, str(QName(ns.get('mets'), 'name'))).text = 'INPUT LEVERERANDE ORG' 
+        namelement = etree.SubElement(agentLevererandeOrganisation, str(QName(ns.get('mets'), 'name'))).text = self.organisation
 
         # Skapar altrecordID
         altRecordID = etree.SubElement(metsHdr, str(QName(ns.get('mets'),'altRecordID')))
         altRecordID.set('TYPE', 'SUBMISSIONAGREEMENT')
-        altRecordID.text = 'INPUT! NÅGOT BRA DIARIENUMMER'
+        altRecordID.text = self.diarienummer
         
         # Skapar dmdSec
         #dmdSec = etree.SubElement(rotelement, str(QName(ns.get('mets'), 'dmdSec')))
@@ -99,29 +179,44 @@ class FgsMaker:
     
     def collectFiles(self, directory, subdirectorys=False):
         filedict = self.filedict
+        # Kontrollerar att sökvägen är ok.
+        if not os.path.exists(directory):
+            print("Path doesn't exist")
+            return 'Wrong path'
         
         # Skapar en dict med alla filnamn och deras sökväg
         for root, dirs, files in os.walk(directory):
-            # Om 
+            # Om endast huvudkatalogen ska ingå i paketet
             if subdirectorys == False:
                 for f in files:
                     filePath = os.path.join(root,f)
                     filedict[f] = filedict.get(f,{'path':filePath})
-                    #print(filedict)
                 break
-        # OBS! LÄGG TILL KOD OM MAN VILL INKLUDERA SUBDIR
-        
+            
+            # Om subdirectorys ska ingå i paketet
+            if subdirectorys == True:
+                for f in files:
+                    filePath = os.path.join(root,f)
+                    filedict[f] = filedict.get(f,{'path':filePath})
+
         # Samlar metadata om filerna och lägger till i dicten.
         for  k, v in filedict.items():
             # Samlar metadata
+            print(f'Genererar metadata för {k}')
             filePathFromDict = filedict[k]['path']
             fileSize = str(os.stat(filePathFromDict).st_size)
-            createdDate = datetime.datetime.utcfromtimestamp(os.stat(filePath).st_mtime).strftime('%Y-%m-%dT%H:%M:%S')
+            # Lägg på en timme + 1
+            createdDate = datetime.datetime.utcfromtimestamp(os.stat(filePathFromDict).st_mtime).strftime('%Y-%m-%dT%H:%M:%S')
             hashValue = self.hashfunction(filePathFromDict)
             mimeType = mimetypes.guess_type(filePathFromDict)[0]
             originalFileName = k
             fgsFileName = str(originalFileName).lower().replace('å', 'a').replace('ä','a').replace('ö','o')
-            fileLink = f'file:///Content/{fgsFileName}'
+            
+            # Tar fram den relativa sökvägen genom att ta hela filsökvägen - {directory} för att använda till att skapa fileLink.
+            # C:\mappen\undermapp1\undermapp2\Engöttigfil.txt --> undermapp1/undermapp2
+            # file:///Content/undermapp1/undermapp2/engottigfil.txt'
+            relativeFilePath = filePathFromDict.replace(directory,'').replace(k,'').replace('\\','/')
+            fileLink = f'file:///Content{relativeFilePath}{fgsFileName}'
 
             
             # Lägger i dict           
@@ -132,10 +227,10 @@ class FgsMaker:
             filedict[k]['filelink'] = fileLink
             filedict[k]['originalfilename'] = originalFileName
             filedict[k]['fgsfilename'] = fgsFileName
+            filedict[k]['relativefilepath'] = relativeFilePath
+        
             
             
-            
-    
     # Code slightly modified from https://stackoverflow.com/questions/1131220/get-md5-hash-of-big-files-in-python
     def hashfunction(self, file):
         with open(file, "rb") as f:
@@ -155,35 +250,42 @@ class FgsMaker:
         os.makedirs(path, exist_ok=True)
         # kopierar sip.xml till paketet.
         sipPath = os.path.join(directory,'sip.xml')
+        print(sipPath)
         shutil.copy2(sipPath, parentDir)
         
         # Lägger paketets filer i contentmappen.
         filedict = self.filedict
         for k, v in filedict.items():
             if k == os.path.basename(sys.argv[0]):
+                print(f'Hoppar över {sys.argv[0]}')
                 continue
             else:
-                # Flyttar filen till contentkatalogen
-                shutil.copy2(filedict[k]['path'], path)
-                # Path till den flyttade filen
-                newPath = os.path.join(path, k)
-                # Fgs-namnet på filen (utan åäö + lower)
-                fgsFileName = filedict[k]['fgsfilename']
-                # skapar path för att kunna byta namn till fgsnamnet
-                changePathName = os.path.join(path,fgsFileName)
-                # Byter namn.
+                # Tar fram den relativa sökvägen till filen genom att lägga ihop cwd + relativ path. Skapar katalog i FGSpackage om den inte finns.
+                print(f'Lägger till {k} i FGS-paketet')
+                relativePackagePath = path + filedict[k]['relativefilepath']
+                relativePackagePath = os.path.join(relativePackagePath)
+                os.makedirs(os.path.dirname(relativePackagePath), exist_ok=True)
+                # Kopierar från path till relativepackagePath
+                shutil.copy2(filedict[k]['path'], relativePackagePath)
+                # Ger filerna fgs-namn.
+                newPath = os.path.join(relativePackagePath, k)
+                fgsPath = os.path.join(relativePackagePath, filedict[k]['fgsfilename'])
                 try:
-                    os.rename(newPath, changePathName)
-                except:
-                    print('!')
-        shutil.make_archive('fgs','zip', parentDir)     
+                   os.rename(newPath, fgsPath)
+                except Exception as e:
+                   print(e)
+        # Skapar zippen
+        packageTime = datetime.datetime.now().strftime('%Y_%m_%dT%H_%M_%S')
+        shutil.make_archive(f'FGS_Package_{packageTime}','zip', parentDir)
+        # Tar bort katalogen FGSpackage efter att den zippats.
+        shutil.rmtree(parentDir)
+        print(f'Paketet FGS_Package_{packageTime}.zip genererades i katalogen {cwd}')     
 
 # Startar Skriptet
 fgsPackage = FgsMaker()
-fgsPackage.collectFiles(cwd)
+fgsPackage.inputValues(True)
+print(fgsPackage.subfolders)
+fgsPackage.collectFiles(fgsPackage.pathToFiles, fgsPackage.subfolders)
 fgsPackage.createSip()
 fgsPackage.createFgsPackage(cwd)
 
-
-#print(sys.argv[0])
-#print(os.path.basename(sys.argv[0]))
