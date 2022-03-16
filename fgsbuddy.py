@@ -1,15 +1,15 @@
-from dataclasses import replace
-import os
-from re import sub
-from xml.etree.ElementTree import QName
-from lxml import etree
-import uuid
 import datetime
 import hashlib
 import mimetypes
+import os
 import shutil
 import sys
-
+import time
+import uuid
+from xml.etree.ElementTree import QName
+from rich.progress import track
+from rich.progress import Progress
+from lxml import etree
 
 cwd = os.getcwd()
 
@@ -47,8 +47,7 @@ class FgsMaker:
                     return 'No Values!'
                 else:
                     'Felaktig inmatning' 
-
-            
+         
             loopChecker = True
             while loopChecker:
                 idChecker = input('1. Generera arkivbildarkod\n2. Skriv in arkivbildarkoden\n3. Avsluta\n ')
@@ -62,8 +61,8 @@ class FgsMaker:
                     return 'No Values!'
                 else:
                     'Felaktig inmatning' 
+            
             loopChecker = True
-
             while loopChecker:
                 print('Från vilken mapp ska man genera ett FGS-paket?')
                 pathChecker = input('1. Samma katalog som skriptet\n2. Annan katalog\n3. Avsluta\n ')
@@ -84,8 +83,8 @@ class FgsMaker:
                     return 'No Values!'
                 else:
                     'Felaktig inmatning'
+            
             loopChecker = True
-
             subfolders = input('Ska även underkataloger inkluderas i FGS-paketet?\n 1. Nej 2. Ja\n>')
             while loopChecker:
                 if subfolders == '1':
@@ -151,7 +150,7 @@ class FgsMaker:
         fileGrp = etree.SubElement(fileSec, str(QName(ns.get('mets'), 'fileGrp')))
         
         #Filer använder värden i filedict som populerats via funktionen "collectFiles"
-        for k, v in filedict.items():
+        for k, v in track(filedict.items(), 'Skapar Sip.xml'):
             # Hoppar över filen om det är samma som pythonfilen som körs.
             if k == os.path.basename(sys.argv[0]):
                 continue
@@ -168,6 +167,7 @@ class FgsMaker:
                 fLocat.set('LOCTYPE', 'URL')
                 fLocat.set(str(QName(ns.get('xlink'),'type')),'simple')
                 fLocat.set(str(QName(ns.get('xlink'),'href')),filedict[k]['filelink'])
+                time.sleep(0.05)
 
         # Skapar structMap
         structMap = etree.SubElement(rotelement, str(QName(ns.get('mets'), 'structMap')))
@@ -199,10 +199,10 @@ class FgsMaker:
                     filePath = os.path.join(root,f)
                     filedict[f] = filedict.get(f,{'path':filePath})
 
-        # Samlar metadata om filerna och lägger till i dicten.
-        for  k, v in filedict.items():
+        # Samlar metadata om filerna och lägger till i dicten. (Track används för att skapa "Progressbar")
+        for  k, v in track(filedict.items(), description=f"Genererar metadata för filer"):
             # Samlar metadata
-            print(f'Genererar metadata för {k}')
+            #print(f'Genererar metadata för {k}')
             filePathFromDict = filedict[k]['path']
             fileSize = str(os.stat(filePathFromDict).st_size)
             # Lägg på en timme + 1
@@ -228,6 +228,7 @@ class FgsMaker:
             filedict[k]['originalfilename'] = originalFileName
             filedict[k]['fgsfilename'] = fgsFileName
             filedict[k]['relativefilepath'] = relativeFilePath
+            time.sleep(0.05)
         
             
             
@@ -250,18 +251,17 @@ class FgsMaker:
         os.makedirs(path, exist_ok=True)
         # kopierar sip.xml till paketet.
         sipPath = os.path.join(directory,'sip.xml')
-        print(sipPath)
         shutil.copy2(sipPath, parentDir)
         
-        # Lägger paketets filer i contentmappen.
+        # Lägger paketets filer i contentmappen (track används för att skapa "progressbar")
         filedict = self.filedict
-        for k, v in filedict.items():
+        for k, v in track(filedict.items(), description="Preparerar FGS-paketet"):
             if k == os.path.basename(sys.argv[0]):
-                print(f'Hoppar över {sys.argv[0]}')
+                #print(f'Hoppar över {sys.argv[0]}')
                 continue
             else:
                 # Tar fram den relativa sökvägen till filen genom att lägga ihop cwd + relativ path. Skapar katalog i FGSpackage om den inte finns.
-                print(f'Lägger till {k} i FGS-paketet')
+                #print(f'Lägger till {k} i FGS-paketet')
                 relativePackagePath = path + filedict[k]['relativefilepath']
                 relativePackagePath = os.path.join(relativePackagePath)
                 os.makedirs(os.path.dirname(relativePackagePath), exist_ok=True)
@@ -274,17 +274,26 @@ class FgsMaker:
                    os.rename(newPath, fgsPath)
                 except Exception as e:
                    print(e)
+                time.sleep(0.05)
         # Skapar zippen
-        packageTime = datetime.datetime.now().strftime('%Y_%m_%dT%H_%M_%S')
-        shutil.make_archive(f'FGS_Package_{packageTime}','zip', parentDir)
-        # Tar bort katalogen FGSpackage efter att den zippats.
-        shutil.rmtree(parentDir)
+        with Progress() as progress:
+            task = progress.add_task('Skapar FGS-paket', total=4)
+            progress.update(task, advance=10)
+            time.sleep(0.1)
+            packageTime = datetime.datetime.now().strftime('%Y_%m_%dT%H_%M_%S')
+            progress.update(task, advance=15)
+            shutil.make_archive(f'FGS_Package_{packageTime}','zip', parentDir)
+            progress.update(task, advance=25)
+            time.sleep(0.1)
+            # Tar bort katalogen FGSpackage efter att den zippats.
+            shutil.rmtree(parentDir)
+            progress.update(task, advance=50)
+            time.sleep(1)
         print(f'Paketet FGS_Package_{packageTime}.zip genererades i katalogen {cwd}')     
 
 # Startar Skriptet
 fgsPackage = FgsMaker()
 fgsPackage.inputValues(True)
-print(fgsPackage.subfolders)
 fgsPackage.collectFiles(fgsPackage.pathToFiles, fgsPackage.subfolders)
 fgsPackage.createSip()
 fgsPackage.createFgsPackage(cwd)
