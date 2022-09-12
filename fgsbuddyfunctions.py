@@ -24,14 +24,27 @@ class FgsMaker:
         self.arkivbildarkod = ''
         self.pathToFiles = ''
 
-    def inputValues (self, debug = False):
+    def inputValues (self, values=False, debug = False):
         if debug:
             self.arkivbildare = 'TESTARKIVBILDAREN'
             self.arkivbildarkod = '12323213123'
             self.pathToFiles = testfolder
             self.organisation = 'TESTORGANISATIONEN'
             self.subfolders = True
-            self.diarienummer = '123456789'
+            self.submissionagreement = '123456789'
+        
+        if not debug:
+            self.arkivbildare = values['arkivbildare']
+            self.arkivbildarkod = f'{values["IDkodtyp"]}:{values["IDkod"]}'
+            self.submissionagreement =  values['submissionagreement']
+            self.pathToFiles = values['folder']
+            self.organisation = values['levererandeorganisation']
+            self.recordstatus =values['recordstatus']
+            self.informationstyp = values['informationstyp']
+            self.system = values['system']
+
+
+
        
     def createSip(self):
         filedict = self.filedict
@@ -47,7 +60,7 @@ class FgsMaker:
         xmlFile = etree.ElementTree(rotelement)
         rotelement.set(schemaLocation, 'http://www.loc.gov/METS/ http://xml.ra.se/e-arkiv/METS/CSPackageMETS.xsd ExtensionMETS http://xml.ra.se/e-arkiv/METS/CSPackageExtensionMETS.xsd')
         rotelement.set('OBJID', str(uuid.uuid4()))
-        rotelement.set('TYPE', 'Unstructured')
+        rotelement.set('TYPE', self.informationstyp)
         rotelement.set('PROFILE', 'http://xml.ra.se/e-arkiv/METS/CommonSpecificationSwedenPackageProfile.xml')
         
         # Skapar metsHdr
@@ -66,7 +79,7 @@ class FgsMaker:
         agentLevererandeSystem.set('ROLE', "ARCHIVIST")
         agentLevererandeSystem.set('TYPE', "OTHER")
         agentLevererandeSystem.set('OTHERTYPE', "SOFTWARE")
-        namelement = etree.SubElement(agentLevererandeSystem, str(QName(ns.get('mets'), 'name'))).text = 'Filer på disk' 
+        namelement = etree.SubElement(agentLevererandeSystem, str(QName(ns.get('mets'), 'name'))).text = self.system 
 
         agentLevererandeOrganisation = etree.SubElement(metsHdr, str(QName(ns.get('mets'),'agent')))
         agentLevererandeOrganisation.set('ROLE', "CREATOR")
@@ -76,7 +89,7 @@ class FgsMaker:
         # Skapar altrecordID
         altRecordID = etree.SubElement(metsHdr, str(QName(ns.get('mets'),'altRecordID')))
         altRecordID.set('TYPE', 'SUBMISSIONAGREEMENT')
-        altRecordID.text = self.diarienummer
+        altRecordID.text = self.submissionagreement
         
         # Skapar dmdSec
         #dmdSec = etree.SubElement(rotelement, str(QName(ns.get('mets'), 'dmdSec')))
@@ -88,7 +101,7 @@ class FgsMaker:
         #Filer använder värden i filedict som populerats via funktionen "collectFiles"
         for k, v in track(filedict.items(), 'Skapar Sip.xml'):
             # Hoppar över filen om det är samma som pythonfilen som körs samt ignorerar andra pythonfiler
-            if k == os.path.basename(sys.argv[0]) or k[-3:] == '.py' or k[-3:] == 'pyc':
+            if k == os.path.basename(sys.argv[0]):
                 continue
             else:
                 fileelement = etree.SubElement(fileGrp, str(QName(ns.get('mets'), 'file')))
@@ -196,8 +209,7 @@ class FgsMaker:
         # Lägger paketets filer i contentmappen (track används för att skapa "progressbar")
         filedict = self.filedict
         for k, v in track(filedict.items(), description="Preparerar FGS-paketet"):
-            if k == os.path.basename(sys.argv[0]) or k[-3:] == '.py' or k[-3:] == 'pyc':
-                #print(f'Hoppar över {sys.argv[0]}')
+            if k == os.path.basename(sys.argv[0]):
                 continue
             else:
                 # Tar fram den relativa sökvägen till filen genom att lägga ihop cwd + relativ path. Skapar katalog i FGSpackage om den inte finns.
