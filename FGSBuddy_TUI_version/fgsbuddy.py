@@ -13,7 +13,9 @@ from lxml import etree
 
 cwd = os.getcwd()
 
+                                          
 #fileFolder = cwd
+                 
 
 class FgsMaker:
     def __init__(self):
@@ -157,7 +159,7 @@ class FgsMaker:
             else:
                 fileelement = etree.SubElement(fileGrp, str(QName(ns.get('mets'), 'file')))
                 fileelement.set('ID', f'ID{str(uuid.uuid4())}')
-                fileelement.set('MIMETYPE', filedict[k]['mimetype'])
+                #fileelement.set('MIMETYPE', filedict[k]['mimetype'])
                 fileelement.set('SIZE', filedict[k]['filesize'])
                 fileelement.set('CHECKSUM', filedict[k]['hashvalue'])
                 fileelement.set('CREATED', filedict[k]['createdate'])

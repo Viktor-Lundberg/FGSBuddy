@@ -7,29 +7,31 @@ cwd = os.getcwd()
 sg.theme('LightGreen2')
 
 column1 = [
-    [sg.Text('Arkivbildare - Namn', tooltip='<mets><metsHdr><agent ROLE=”ARCHIVIST” TYPE=”ORGANIZATION”><name>[Arkivbildare Namn]') ],
-    [sg.Input(key='arkivbildare', tooltip='''Namn på arkivbildaren. 
-Arkivbildaren är den organisation som har skapat arkivmaterialet''')],
-    [sg.Text('Identitetskod')],
-    [sg.Combo(['VAT', 'DUNS', 'ORG','HSA','Local', 'URI'], default_value='ORG', key='IDkodtyp'),sg.Input(key='IDkod')],
-    [sg.Text('Levererande organisation - Namn', tooltip='<mets><metsHdr><agent ROLE="Creator" TYPE=”ORGANIZATION”><name>[Arkivbildare Namn]') ],
-    [sg.Input(key='levererandeorganisation', tooltip='''Namn på den organisation som levererat SIP:en till e-arkivet. 
+    [sg.Text('Arkivbildare - Namn*', tooltip='<mets><metsHdr><agent ROLE=”ARCHIVIST” TYPE=”ORGANIZATION”><name>[Arkivbildare Namn]') ],
+    [sg.Input('Arkivbildaren',key='arkivbildare', tooltip='''Namn på arkivbildaren. 
+Arkivbildaren är den organisation som har skapat arkivmaterialet''',)],
+    [sg.Text('Identitetskod*')],
+    [sg.Combo(['VAT', 'DUNS', 'ORG','HSA','Local', 'URI'], default_value='ORG', key='IDkodtyp'),sg.Input('koden', key='IDkod')],
+    [sg.Text('Levererande organisation - Namn*', tooltip='<mets><metsHdr><agent ROLE="Creator" TYPE=”ORGANIZATION”><name>[Arkivbildare Namn]') ],
+    [sg.Input('Organisationen',key='levererandeorganisation', tooltip='''Namn på den organisation som levererat SIP:en till e-arkivet. 
 Denna organisation är ofta identisk med den som anges som arkivbildare. Det skiljer sig i de fall där en myndighet övertagit en annan myndighets arkiv''')],
     ]
 
 column2 = [
-    [sg.Text('System')],
-    [sg.Input(key='system')],
-    [sg.Text('Informationstyp')],
+    [sg.Text('System*')],
+    [sg.Input(default_text ='SYSTEMET', key='system')],
+    [sg.Text('Informationstyp*')],
     [sg.Combo(['ERMS','Personnel','Medical record','Economics','Databases','Webpages', 'GIS', 'No specification', 'AIC', 'Archival information','Unstructured', 'Single records', 'Publication'], default_value='ERMS', key='informationstyp')],
-    [sg.Text('Status')],
+    [sg.Text('Status*')],
     [sg.Combo(['NEW', 'SUPPLEMENT', 'REPLACEMENT','TEST','VERSION', 'OTHER'], default_value='NEW', key='recordstatus')],
-    [sg.Text('Leveransöverenskommelse')],
-    [sg.Input(key='submissionagreement')],
-    [sg.Text('Sökväg till filer')],
-    [sg.Input(cwd,tooltip="Välj katalog"), sg.FolderBrowse('Välj katalog',key="folder", initial_folder=cwd)],
+    [sg.Text('Leveransöverenskommelse*')],
+    [sg.Input('Submissionagremmentnernrenre',key='submissionagreement')],
+    [sg.Text('Sökväg till filer*')],
+    [sg.Input(default_text=cwd,tooltip="Välj katalog"), sg.FolderBrowse('Välj katalog',key="folder", initial_folder=os.path.join(cwd))],
     [sg.Text('Inkludera undermappar')],
-    [sg.Radio('Ja', 'subfolders', default=False, key='subfolderstrue'), sg.Radio('Nej', 'subfolders', default=True, key='subfoldersfalse')]
+    [sg.Radio('Ja', 'subfolders', default=False, key='subfolderstrue'), sg.Radio('Nej', 'subfolders', default=True, key='subfoldersfalse')],
+    [sg.Text('Sökväg till metadatafilen*')],
+    [sg.Input(tooltip="Välj katalog"), sg.FileBrowse('Välj katalog',key="metadatafile", initial_folder=os.path.join(cwd))]
 
     ]
 
@@ -45,20 +47,25 @@ while True:
         case sg.WIN_CLOSED:
             break
         case 'createSIP':
-            print(values['informationstyp'])
+            #print(values['folder'])
+            #print(values['informationstyp'])
             #SKAPA KONTROLL PÅ OBLIGATORISKA VÄRDEN
             if values['submissionagreement'] == '' or values['system'] == '':
-                print('Saknas')
+                print('tttt')
             # OM ALLT ÄR OK KÖR PAKETET
             else:
                 fgsPackage = FGSfunc.FgsMaker()
                 fgsPackage.inputValues(values, False)
-                folder = os.path.join(values['folder'])
+                if values['folder']== '':
+                    folder = os.path.join(cwd)
+                else:
+                    folder = os.path.join(values['folder'])
                 if values['subfolderstrue']:
                     subfolders = True
                 else:
                     subfolders = False
-                fgsPackage.collectFiles(folder, subfolders)
+                metadatafile = values['metadatafile']
+                fgsPackage.collectFiles(folder, subfolders, metadatafile)
                 fgsPackage.createSip()
                 fgsPackage.createFgsPackage(cwd)
             

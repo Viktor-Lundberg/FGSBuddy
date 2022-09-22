@@ -13,7 +13,7 @@ from lxml import etree
 
 cwd = os.getcwd()
 print(cwd)
-testfolder = os.path.join(cwd, 'Testmapp')
+testfolder = os.path.join(cwd, 'Testis')
 #fileFolder = cwd
 print(testfolder)
 
@@ -32,6 +32,8 @@ class FgsMaker:
             self.organisation = 'TESTORGANISATIONEN'
             self.subfolders = True
             self.submissionagreement = '123456789'
+            self.informationstyp = 'ERMS'
+            self.system = 'Systemet'
         
         if not debug:
             self.arkivbildare = values['arkivbildare']
@@ -106,7 +108,7 @@ class FgsMaker:
             else:
                 fileelement = etree.SubElement(fileGrp, str(QName(ns.get('mets'), 'file')))
                 fileelement.set('ID', f'ID{str(uuid.uuid4())}')
-                 # Fångar upp fel på MIMETYPE för XSD-filer
+                 # Fångar upp fel på MIMETYPE
                 try:
                     fileelement.set('MIMETYPE', filedict[k]['mimetype'])
                 except:
@@ -121,7 +123,7 @@ class FgsMaker:
                 fLocat.set('LOCTYPE', 'URL')
                 fLocat.set(str(QName(ns.get('xlink'),'type')),'simple')
                 fLocat.set(str(QName(ns.get('xlink'),'href')),filedict[k]['filelink'])
-                time.sleep(0.05)
+                
 
         # Skapar structMap
         structMap = etree.SubElement(rotelement, str(QName(ns.get('mets'), 'structMap')))
@@ -131,27 +133,31 @@ class FgsMaker:
         # Skriver xml till sip.xml
         xmlFile.write(f'sip.xml', xml_declaration=True, encoding='utf-8', pretty_print=True)
     
-    def collectFiles(self, directory, subdirectorys=False):
+    def collectFiles(self, directory, subdirectorys=False, metadatafile=False):
         filedict = self.filedict
         # Kontrollerar att sökvägen är ok.
         if not os.path.exists(directory):
-            print("Path doesn't exist")
+            print(f"Path doesn't existnnn {directory}")
             return 'Wrong path'
         
         # Skapar en dict med alla filnamn och deras sökväg
         for root, dirs, files in os.walk(directory):
             # Om endast huvudkatalogen ska ingå i paketet
+            
             if subdirectorys == False:
                 for f in files:
                     filePath = os.path.join(root,f)
-                    filedict[f] = filedict.get(f,{'path':filePath})
+                    filedict[filePath] = filedict.get(f,{'path':filePath})
+                    filedict[filePath]['fileName'] = f
                 break
             
             # Om subdirectorys ska ingå i paketet
             if subdirectorys == True:
                 for f in files:
                     filePath = os.path.join(root,f)
-                    filedict[f] = filedict.get(f,{'path':filePath})
+                    filedict[filePath] = filedict.get(f,{'path':filePath})
+                    filedict[filePath]['fileName'] = f
+                    
 
         # Samlar metadata om filerna och lägger till i dicten. (Track används för att skapa "Progressbar")
         for  k, v in track(filedict.items(), description=f"Genererar metadata för filer"):
@@ -159,17 +165,19 @@ class FgsMaker:
             #print(f'Genererar metadata för {k}')
             filePathFromDict = filedict[k]['path']
             fileSize = str(os.stat(filePathFromDict).st_size)
-            # Lägg på en timme + 1
             createdDate = datetime.datetime.utcfromtimestamp(os.stat(filePathFromDict).st_mtime).strftime('%Y-%m-%dT%H:%M:%S')
             hashValue = self.hashfunction(filePathFromDict)
             mimeType = mimetypes.guess_type(filePathFromDict)[0]
-            originalFileName = k
+            originalFileName = filedict[k]['fileName']
             fgsFileName = str(originalFileName).lower().replace('å', 'a').replace('ä','a').replace('ö','o').replace(' ','_')
             
             # Tar fram den relativa sökvägen genom att ta hela filsökvägen - {directory} för att använda till att skapa fileLink.
             # C:\mappen\undermapp1\undermapp2\Engöttigfil.txt --> undermapp1/undermapp2
             # file:///Content/undermapp1/undermapp2/engottigfil.txt'
-            relativeFilePath = filePathFromDict.replace(directory,'').replace(k,'').replace('\\','/')
+            #relativeFilePath = filePathFromDict.replace(directory,'').replace(k,'').replace('\\','/')
+            relativeFilePath = filePathFromDict.replace(directory,'').replace(originalFileName,'').replace('\\','/')
+            print(filePathFromDict)
+            print(f'detta är {relativeFilePath}')
             fileLink = f'file:///Content{relativeFilePath}{fgsFileName}'
 
             # Lägger i dict           
@@ -181,9 +189,45 @@ class FgsMaker:
             filedict[k]['originalfilename'] = originalFileName
             filedict[k]['fgsfilename'] = fgsFileName
             filedict[k]['relativefilepath'] = relativeFilePath
-            time.sleep(0.05)
-        
             
+
+        # METADATAFILE
+        if metadatafile:
+            metadatafilepath = os.path.join(metadatafile)
+            print(metadatafilepath)
+            fileSize = str(os.stat(metadatafilepath).st_size)
+            createdDate = datetime.datetime.utcfromtimestamp(os.stat(metadatafilepath).st_mtime).strftime('%Y-%m-%dT%H:%M:%S')
+            hashValue = self.hashfunction(metadatafilepath)
+            mimeType = mimetypes.guess_type(metadatafilepath)[0]
+            originalFileName = os.path.basename(metadatafilepath)
+            #Ta bort lower om man vill att det ska fungera med filer som heter samma sak fast med stora/respektive små bokstäver......
+            fgsFileName = str(originalFileName).lower().replace('å', 'a').replace('ä','a').replace('ö','o').replace(' ','_')
+            
+            # Tar fram den relativa sökvägen genom att ta hela filsökvägen - {directory} för att använda till att skapa fileLink.
+            # C:\mappen\undermapp1\undermapp2\Engöttigfil.txt --> undermapp1/undermapp2
+            # file:///Content/undermapp1/undermapp2/engottigfil.txt'
+            print(f'Detta är directory {directory}')
+            #relativeFilePath = metadatafilepath.replace(directory,'').replace(originalFileName,'').replace('\\','/')
+            relativeFilePath = '/'
+            
+            fileLink = f'file:///{fgsFileName}'
+
+            filedict[metadatafilepath] = filedict.get(metadatafilepath,{'path':metadatafilepath})
+
+            
+            # Lägger i dict           
+            filedict[metadatafilepath]['filesize'] = fileSize
+            filedict[metadatafilepath]['hashvalue'] = hashValue
+            filedict[metadatafilepath]['createdate'] = createdDate
+            filedict[metadatafilepath]['mimetype'] = mimeType
+            filedict[metadatafilepath]['filelink'] = fileLink
+            filedict[metadatafilepath]['originalfilename'] = originalFileName
+            filedict[metadatafilepath]['fgsfilename'] = fgsFileName
+            filedict[metadatafilepath]['relativefilepath'] = relativeFilePath
+            filedict[metadatafilepath]['fileName'] = originalFileName
+        for k, v in filedict.items():
+            print(k, v)
+            print(f'\n')    
             
     # Code slightly modified from https://stackoverflow.com/questions/1131220/get-md5-hash-of-big-files-in-python
     def hashfunction(self, file):
@@ -208,7 +252,9 @@ class FgsMaker:
         
         # Lägger paketets filer i contentmappen (track används för att skapa "progressbar")
         filedict = self.filedict
+        i = 0
         for k, v in track(filedict.items(), description="Preparerar FGS-paketet"):
+            print(i)
             if k == os.path.basename(sys.argv[0]):
                 continue
             else:
@@ -220,34 +266,33 @@ class FgsMaker:
                 # Kopierar från path till relativepackagePath
                 shutil.copy2(filedict[k]['path'], relativePackagePath)
                 # Ger filerna fgs-namn.
-                newPath = os.path.join(relativePackagePath, k)
+                newPath = os.path.join(relativePackagePath, filedict[k]['fileName'])
                 fgsPath = os.path.join(relativePackagePath, filedict[k]['fgsfilename'])
+                i+=1
                 try:
                    os.rename(newPath, fgsPath)
                 except Exception as e:
                    print(e)
-                time.sleep(0.05)
+                
+
         # Skapar zippen
         with Progress() as progress:
             task = progress.add_task('Skapar FGS-paket', total=4)
             progress.update(task, advance=10)
-            time.sleep(0.1)
             packageTime = datetime.datetime.now().strftime('%Y_%m_%dT%H_%M_%S')
             progress.update(task, advance=15)
             shutil.make_archive(f'FGS_Package_{packageTime}','zip', parentDir)
             progress.update(task, advance=25)
-            time.sleep(0.1)
             # Tar bort katalogen FGSpackage efter att den zippats.
             shutil.rmtree(parentDir)
             progress.update(task, advance=50)
-            time.sleep(1)
         print(f'Paketet FGS_Package_{packageTime}.zip genererades i katalogen {cwd}')     
 
 '''
 # Startar Skriptet
 fgsPackage = FgsMaker()
-fgsPackage.inputValues(True)
-fgsPackage.collectFiles(fgsPackage.pathToFiles, fgsPackage.subfolders)
+fgsPackage.inputValues(debug=True)
+fgsPackage.collectFiles(fgsPackage.pathToFiles, fgsPackage.subfolders, False)
 fgsPackage.createSip()
 fgsPackage.createFgsPackage(cwd)
 '''
