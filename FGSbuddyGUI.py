@@ -1,4 +1,3 @@
-# Non working version!!!
 import os
 import PySimpleGUI as sg
 import fgsbuddyfunctions as FGSfunc
@@ -35,9 +34,9 @@ column2 = [
 
     ]
 
-layout = [[sg.Column(column1), sg.Column(column2)], [sg.Submit('Skapa paket', key='createSIP')]]
+layout = [[sg.Column(column1, vertical_alignment='top'), sg.Column(column2)], [sg.Submit('Skapa paket', key='createSIP')]]
 
-window = sg.Window('FGS-Buddy v 0.2 - Viktor Lundberg', layout, font='Consolas 10')
+window = sg.Window('FGS-Buddy v 0.5 - Viktor Lundberg', layout, font='Consolas 10')
 
 
 # Program-Loop

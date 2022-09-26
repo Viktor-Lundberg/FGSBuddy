@@ -137,7 +137,7 @@ class FgsMaker:
         filedict = self.filedict
         # Kontrollerar att sökvägen är ok.
         if not os.path.exists(directory):
-            print(f"Path doesn't existnnn {directory}")
+            print(f"Path doesn't exist {directory}")
             return 'Wrong path'
         
         # Skapar en dict med alla filnamn och deras sökväg
@@ -189,6 +189,7 @@ class FgsMaker:
             filedict[k]['originalfilename'] = originalFileName
             filedict[k]['fgsfilename'] = fgsFileName
             filedict[k]['relativefilepath'] = relativeFilePath
+            filedict[k]['category'] = 'content'
             
 
         # METADATAFILE
@@ -210,7 +211,7 @@ class FgsMaker:
             #relativeFilePath = metadatafilepath.replace(directory,'').replace(originalFileName,'').replace('\\','/')
             relativeFilePath = '/'
             
-            fileLink = f'file:///{fgsFileName}'
+            fileLink = f'file:///Metadata/{fgsFileName}'
 
             filedict[metadatafilepath] = filedict.get(metadatafilepath,{'path':metadatafilepath})
 
@@ -225,9 +226,8 @@ class FgsMaker:
             filedict[metadatafilepath]['fgsfilename'] = fgsFileName
             filedict[metadatafilepath]['relativefilepath'] = relativeFilePath
             filedict[metadatafilepath]['fileName'] = originalFileName
-        for k, v in filedict.items():
-            print(k, v)
-            print(f'\n')    
+            filedict[metadatafilepath]['category'] = 'metadata'
+            
             
     # Code slightly modified from https://stackoverflow.com/questions/1131220/get-md5-hash-of-big-files-in-python
     def hashfunction(self, file):
@@ -249,14 +249,19 @@ class FgsMaker:
         # kopierar sip.xml till paketet.
         sipPath = os.path.join(directory,'sip.xml')
         shutil.copy2(sipPath, parentDir)
+
+        # Sökvägar för metadatafilen
+        metadataDir = 'Metadata'
+        metadataPath = os.path.join(parentDir,metadataDir)
+        os.mkdir(metadataPath)
+
         
         # Lägger paketets filer i contentmappen (track används för att skapa "progressbar")
         filedict = self.filedict
         i = 0
         for k, v in track(filedict.items(), description="Preparerar FGS-paketet"):
-            print(i)
-            if k == os.path.basename(sys.argv[0]):
-                continue
+            if filedict[k]['category'] == 'metadata':
+                shutil.copy2(filedict[k]['path'], metadataPath)
             else:
                 # Tar fram den relativa sökvägen till filen genom att lägga ihop cwd + relativ path. Skapar katalog i FGSpackage om den inte finns.
                 #print(f'Lägger till {k} i FGS-paketet')
