@@ -133,7 +133,7 @@ class FgsMaker:
         # Skriver xml till sip.xml
         xmlFile.write(f'sip.xml', xml_declaration=True, encoding='utf-8', pretty_print=True)
     
-    def collectFiles(self, directory, subdirectorys=False, metadatafile=False):
+    def collectFiles(self, directory, subdirectorys=False, metadatafile=False, schemafile=False):
         filedict = self.filedict
         # Kontrollerar att sökvägen är ok.
         if not os.path.exists(directory):
@@ -227,6 +227,43 @@ class FgsMaker:
             filedict[metadatafilepath]['relativefilepath'] = relativeFilePath
             filedict[metadatafilepath]['fileName'] = originalFileName
             filedict[metadatafilepath]['category'] = 'metadata'
+        
+        # Schemafile
+        if schemafile:
+            print('jobbar med schema')
+            metadatafilepath = os.path.join(schemafile)
+            print(metadatafilepath)
+            fileSize = str(os.stat(metadatafilepath).st_size)
+            createdDate = datetime.datetime.utcfromtimestamp(os.stat(metadatafilepath).st_mtime).strftime('%Y-%m-%dT%H:%M:%S')
+            hashValue = self.hashfunction(metadatafilepath)
+            mimeType = mimetypes.guess_type(metadatafilepath)[0]
+            originalFileName = os.path.basename(metadatafilepath)
+            #Ta bort lower om man vill att det ska fungera med filer som heter samma sak fast med stora/respektive små bokstäver......
+            fgsFileName = str(originalFileName).lower().replace('å', 'a').replace('ä','a').replace('ö','o').replace(' ','_')
+            
+            # Tar fram den relativa sökvägen genom att ta hela filsökvägen - {directory} för att använda till att skapa fileLink.
+            # C:\mappen\undermapp1\undermapp2\Engöttigfil.txt --> undermapp1/undermapp2
+            # file:///Content/undermapp1/undermapp2/engottigfil.txt'
+            print(f'Detta är directory {directory}')
+            #relativeFilePath = metadatafilepath.replace(directory,'').replace(originalFileName,'').replace('\\','/')
+            relativeFilePath = '/'
+            
+            fileLink = f'file:///Metadata/{fgsFileName}'
+
+            filedict[metadatafilepath] = filedict.get(metadatafilepath,{'path':metadatafilepath})
+
+            
+            # Lägger i dict           
+            filedict[metadatafilepath]['filesize'] = fileSize
+            filedict[metadatafilepath]['hashvalue'] = hashValue
+            filedict[metadatafilepath]['createdate'] = createdDate
+            filedict[metadatafilepath]['mimetype'] = mimeType
+            filedict[metadatafilepath]['filelink'] = fileLink
+            filedict[metadatafilepath]['originalfilename'] = originalFileName
+            filedict[metadatafilepath]['fgsfilename'] = fgsFileName
+            filedict[metadatafilepath]['relativefilepath'] = relativeFilePath
+            filedict[metadatafilepath]['fileName'] = originalFileName
+            filedict[metadatafilepath]['category'] = 'schema'
             
             
     # Code slightly modified from https://stackoverflow.com/questions/1131220/get-md5-hash-of-big-files-in-python
@@ -262,6 +299,9 @@ class FgsMaker:
         for k, v in track(filedict.items(), description="Preparerar FGS-paketet"):
             if filedict[k]['category'] == 'metadata':
                 shutil.copy2(filedict[k]['path'], metadataPath)
+            elif filedict[k]['category'] == 'schema':
+                print(f'Nu kör vi {k}')
+                shutil.copy2(filedict[k]['path'], metadataPath)       
             else:
                 # Tar fram den relativa sökvägen till filen genom att lägga ihop cwd + relativ path. Skapar katalog i FGSpackage om den inte finns.
                 #print(f'Lägger till {k} i FGS-paketet')

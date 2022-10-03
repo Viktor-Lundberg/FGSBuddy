@@ -14,6 +14,7 @@ Arkivbildaren är den organisation som har skapat arkivmaterialet''',)],
     [sg.Text('Levererande organisation - Namn*', tooltip='<mets><metsHdr><agent ROLE="Creator" TYPE=”ORGANIZATION”><name>[Arkivbildare Namn]') ],
     [sg.Input('Organisationen',key='levererandeorganisation', tooltip='''Namn på den organisation som levererat SIP:en till e-arkivet. 
 Denna organisation är ofta identisk med den som anges som arkivbildare. Det skiljer sig i de fall där en myndighet övertagit en annan myndighets arkiv''')],
+    [sg.Button('Byt färg', key='tema')]
     ]
 
 column2 = [
@@ -30,13 +31,15 @@ column2 = [
     [sg.Text('Inkludera undermappar')],
     [sg.Radio('Ja', 'subfolders', default=False, key='subfolderstrue'), sg.Radio('Nej', 'subfolders', default=True, key='subfoldersfalse')],
     [sg.Text('Sökväg till metadatafilen*')],
-    [sg.Input(tooltip="Välj katalog"), sg.FileBrowse('Välj katalog',key="metadatafile", initial_folder=os.path.join(cwd))]
+    [sg.Input(tooltip="Välj katalog"), sg.FileBrowse('Välj fil',key="metadatafile", initial_folder=os.path.join(cwd))],
+    [sg.Text('Sökväg till schemafil*')],
+    [sg.Input(tooltip="Välj katalog"), sg.FileBrowse('Välj fil',key="schemafile", initial_folder=os.path.join(cwd))],
 
     ]
 
 layout = [[sg.Column(column1, vertical_alignment='top'), sg.Column(column2)], [sg.Submit('Skapa paket', key='createSIP')]]
 
-window = sg.Window('FGS-Buddy v 0.5 - Viktor Lundberg', layout, font='Consolas 10')
+window = sg.Window('FGS-Buddy v 0.6 - Viktor Lundberg', layout, font='Consolas 10')
 
 
 # Program-Loop
@@ -46,8 +49,9 @@ while True:
         case sg.WIN_CLOSED:
             break
         case 'createSIP':
-            #print(values['folder'])
-            #print(values['informationstyp'])
+            metadatafile = False
+            schemafile = False
+            subfolders = False
             #SKAPA KONTROLL PÅ OBLIGATORISKA VÄRDEN
             if values['submissionagreement'] == '' or values['system'] == '':
                 print('tttt')
@@ -61,12 +65,18 @@ while True:
                     folder = os.path.join(values['folder'])
                 if values['subfolderstrue']:
                     subfolders = True
-                else:
-                    subfolders = False
-                metadatafile = values['metadatafile']
-                fgsPackage.collectFiles(folder, subfolders, metadatafile)
+                if values['metadatafile'] != '':
+                    metadatafile = values['metadatafile']
+                if values['schemafile'] != '':
+                    schemafile = values['schemafile']
+                fgsPackage.collectFiles(folder, subfolders, metadatafile, schemafile)
                 fgsPackage.createSip()
                 fgsPackage.createFgsPackage(cwd)
+        case 'tema':
+            print(f"{values['schemafile']}")
+            
+            
+
             
 
     
