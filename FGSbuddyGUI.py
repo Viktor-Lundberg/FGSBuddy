@@ -14,7 +14,7 @@ Arkivbildaren är den organisation som har skapat arkivmaterialet''',)],
     [sg.Text('Levererande organisation - Namn*', tooltip='<mets><metsHdr><agent ROLE="Creator" TYPE=”ORGANIZATION”><name>[Arkivbildare Namn]') ],
     [sg.Input('Organisationen',key='levererandeorganisation', tooltip='''Namn på den organisation som levererat SIP:en till e-arkivet. 
 Denna organisation är ofta identisk med den som anges som arkivbildare. Det skiljer sig i de fall där en myndighet övertagit en annan myndighets arkiv''')],
-    [sg.Button('Byt färg', key='tema')]
+    
     ]
 
 column2 = [
@@ -30,16 +30,24 @@ column2 = [
     [sg.Input(default_text=cwd,tooltip="Välj katalog"), sg.FolderBrowse('Välj katalog',key="folder", initial_folder=os.path.join(cwd))],
     [sg.Text('Inkludera undermappar')],
     [sg.Radio('Ja', 'subfolders', default=False, key='subfolderstrue'), sg.Radio('Nej', 'subfolders', default=True, key='subfoldersfalse')],
-    [sg.Text('Sökväg till metadatafilen*')],
-    [sg.Input(tooltip="Välj katalog"), sg.FileBrowse('Välj fil',key="metadatafile", initial_folder=os.path.join(cwd))],
-    [sg.Text('Sökväg till schemafil*')],
-    [sg.Input(tooltip="Välj katalog"), sg.FileBrowse('Välj fil',key="schemafile", initial_folder=os.path.join(cwd))],
+    [sg.Text('Sökväg till metadatafil')],
+    [sg.Input(tooltip="Välj metadatafil"), sg.FileBrowse('Välj fil',key="metadatafile", initial_folder=os.path.join(cwd))],
+    [sg.Text('Sökväg till schemafil')],
+    [sg.Input(tooltip="Välj schemafil"), sg.FileBrowse('Välj fil',key="schemafile", initial_folder=os.path.join(cwd))],
 
     ]
+# Work in progress == Ej obligatoriska värden
+column3 = [
+    [sg.pin(sg.Input(default_text ='TESTFÄLT', key='test', visible=False))],
+]
 
-layout = [[sg.Column(column1, vertical_alignment='top'), sg.Column(column2)], [sg.Submit('Skapa paket', key='createSIP')]]
+layout = [
+    [sg.Column(column1, vertical_alignment='top'), sg.Column(column2)],
+    [sg.Column(column3)],
+    [sg.Submit('Skapa paket', key='createSIP'), sg.Button('Alla fält', key='fields')]
+    ]
 
-window = sg.Window('FGS-Buddy v 0.6 - Viktor Lundberg', layout, font='Consolas 10')
+window = sg.Window('FGS-Buddy v 0.7 - Viktor Lundberg', layout, font='Consolas 10')
 
 
 # Program-Loop
@@ -72,7 +80,7 @@ while True:
                 fgsPackage.collectFiles(folder, subfolders, metadatafile, schemafile)
                 fgsPackage.createSip()
                 fgsPackage.createFgsPackage(cwd)
-        case 'tema':
+        case 'fields':
             print(f"{values['schemafile']}")
             
             

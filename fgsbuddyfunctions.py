@@ -292,6 +292,11 @@ class FgsMaker:
         metadataPath = os.path.join(parentDir,metadataDir)
         os.mkdir(metadataPath)
 
+        # Sökvägar för schemafilen
+        schemaDir = 'System'
+        schemaPath = os.path.join(parentDir,schemaDir)
+        os.mkdir(schemaPath)
+
         
         # Lägger paketets filer i contentmappen (track används för att skapa "progressbar")
         filedict = self.filedict
@@ -301,7 +306,7 @@ class FgsMaker:
                 shutil.copy2(filedict[k]['path'], metadataPath)
             elif filedict[k]['category'] == 'schema':
                 print(f'Nu kör vi {k}')
-                shutil.copy2(filedict[k]['path'], metadataPath)       
+                shutil.copy2(filedict[k]['path'], schemaPath)       
             else:
                 # Tar fram den relativa sökvägen till filen genom att lägga ihop cwd + relativ path. Skapar katalog i FGSpackage om den inte finns.
                 #print(f'Lägger till {k} i FGS-paketet')
