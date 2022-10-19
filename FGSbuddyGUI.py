@@ -8,11 +8,11 @@ sg.theme('LightGreen2')
 
 # GUI ELEMENT
 paketinformation = [
-    [sg.Text('Övergripande paketinformation', font='Consolas 12', background_color='gray', size=100)], 
-    [sg.Text('Status*'), sg.Text('Beskrivning', tooltip='<mets>?')],
-    [sg.Combo(['NEW', 'SUPPLEMENT', 'REPLACEMENT','TEST','VERSION', 'OTHER'], default_value='NEW', key='recordstatus'),sg.Input(size=100, key='beskrivning', tooltip='''?''')],
-    [sg.Text('Leveransöverenskommelse*'),sg.Text('Tidigare leveransöverenskommelse')],
-    [sg.Input('Submissionagremmentnernrenre',key='submissionagreement'),sg.Input(key='formersubmissionagreement')],
+    [sg.Text('Övergripande paketinformation', font='Consolas 12', background_color='gray')], 
+    [sg.Text('Status*'), sg.Combo(['NEW', 'SUPPLEMENT', 'REPLACEMENT','TEST','VERSION', 'OTHER'], default_value='NEW', key='recordstatus') ],
+    [sg.Text('Beskrivning', tooltip='<mets>?'),sg.Input(key='beskrivning', tooltip='''?''')],
+    [sg.Text('Leveransöverenskommelse*'), sg.Input('Submissionagremmentnernrenre',key='submissionagreement')],
+    [sg.Text('Tidigare leveransöverenskommelse'),sg.Input(key='formersubmissionagreement')],
 ]
 
 parter = [
@@ -56,36 +56,65 @@ innehall = [
 
 information = [
     [sg.Text('Information', font='Consolas 12', background_color='gray', size=25)],
-    [sg.Text('Informationstyp*'),sg.Text('Informationstypsspecifikation')],
-    [sg.Combo(['ERMS','Personnel','Medical record','Economics','Databases','Webpages', 'GIS', 'No specification', 'AIC', 'Archival information','Unstructured', 'Single records', 'Publication'], default_value='ERMS', key='informationstyp'),
-    sg.Input(key='informationstypsspecifikation')],
-    [sg.Text('Tidsomfång')],
-    [sg.CalendarButton('Startdatum', target='startdatum', format='%Y-%m-%d',no_titlebar=False), sg.Input(key='startdatum', size=(10,1)), sg.Text('-'), sg.Input(key='slutdatum', size=(10,1)),sg.CalendarButton('Slutdatum', target='slutdatum', format='%Y-%m-%d',no_titlebar=False)],
-    [sg.Text('Informationsklass'), sg.Text('Sekretess'), sg.Text('Gallring')],
-    [sg.Input(key='Informationsklass'),sg.Combo(['Secrecy', 'PuL', 'Secrecy and PuL','GDPR','Ej angett'], default_value='Ej angett', key='sekretess'), sg.Combo(['Yes', 'No'], default_value='No', key='Gallring') ]
+    [sg.Text('Informationstyp*'), sg.Combo(['ERMS','Personnel','Medical record','Economics','Databases','Webpages', 'GIS', 'No specification', 'AIC', 'Archival information','Unstructured', 'Single records', 'Publication'], default_value='ERMS', key='informationstyp')],
+    [sg.Text('Informationstypsspecifikation'),sg.Input(key='informationstypsspecifikation')],
+    [sg.Text('Tidsomfång'), sg.CalendarButton('Startdatum', target='startdatum', format='%Y-%m-%d',no_titlebar=False), sg.Input(key='startdatum', size=(10,1)), sg.Text('-'), sg.Input(key='slutdatum', size=(10,1)),sg.CalendarButton('Slutdatum', target='slutdatum', format='%Y-%m-%d',no_titlebar=False)],
+    [sg.Text('Informationsklass'), sg.Input(key='Informationsklass')],
+    [sg.Text('Sekretess'), sg.Combo(['Secrecy', 'PuL', 'Secrecy and PuL','GDPR','Ej angett'], default_value='Ej angett', key='sekretess')],
+    [ sg.Text('Gallring'),sg.Combo(['Yes', 'No'], default_value='No', key='Gallring') ],
 ]
 
 # Work in progress == Ej obligatoriska värden
 overforing = [
-    [(sg.Text('Sökväg till schemafil'))]
+    [sg.Text('Överföring', font='Consolas 12', background_color='gray', size=25)],
+    [(sg.Text('Överföring')), sg.Text('Ordningsnummer inom överföring')],
+    [sg.Input(key='overforing'), sg.Input(key='overforingNR')]
     ]
 
 ovrigt = [
-    [(sg.Text('fsssssssssssssssssssssssss'))]
+    [sg.Text('Övrig information', font='Consolas 12', background_color='gray', size=25)],
+    [(sg.Text('Arkivets namn')), sg.Input(key='arkivetsnamn')],
+    [(sg.Text('Arkivets referenskod')), sg.Input(key='arkivetsreferenskod')],
+    [(sg.Text('Tidigare referenskod')),sg.Input(key='tidigarereferenskod')],
+    [(sg.Text('Producerande organisation - Namn')), sg.Input(key='prodorgnamn')],
+    [(sg.Text('Producerande organisation - Identitetskod')), sg.Input(key='prodorgidkod')],
+    [(sg.Text('Avsändande organisation - Namn')), sg.Input(key='avsandandeorgnamn')],
+    [(sg.Text('Avsändande organisation - Identitetskod')), sg.Input(key='avsandarekod')],
+    [(sg.Text('Informationsägande organisation - Namn')), sg.Input(key='infoagarenamn')],
+    [(sg.Text('Informationsägande organisation - Identitetskod')), sg.Input(key='infoagarekod')],
+]
+
+ovrigt2 = [
+    [sg.Text('', font='Consolas 12', size=25)],
+    [(sg.Text('Levererande system - Namn')), sg.Input(key='levererandesystemnamn')],
+    [(sg.Text('Levererande system - Version')), sg.Input(key='levererandesystemversion')],
+    [(sg.Text('Konsult - Namn')), sg.Input(key='konsultnamn')],
+    [(sg.Text('Konsult - Identitetskod')), sg.Input(key='konsultidkod')],
+    [(sg.Text('Mottagare - Namn')), sg.Input(key='mottagarenamn')],
+    [(sg.Text('Mottagare - Identitetskod')), sg.Input(key='mottagareidkod')],
+    [(sg.Text('Kontaktperson - Namn')), sg.Input(key='kontaktpersonnamn')],
+    [(sg.Text('Kontatperson - Kontaktuppgifter')), sg.Input(key='kontaktuppgifter')],
+
+
+
+
+
+
+
 ]
 
 
 # GUI layout
 layout = [
-    [sg.Column(paketinformation, background_color='Yellow')],
+    [sg.Column(paketinformation, vertical_alignment='top'), sg.Column(information)],
     [sg.Column(parter, vertical_alignment='top'), sg.Column(system, vertical_alignment='top'), sg.Column(innehall, vertical_alignment='top')],
-    [sg.Column(information)],
-    [sg.pin(sg.Column(overforing, key='non', visible=False)), sg.pin(sg.Column(ovrigt, key='non2', visible=False))],
+    [sg.pin(sg.Column(overforing, vertical_alignment='top', key='non', visible=False))],
+    [sg.pin(sg.Column(ovrigt, key='non2', visible=False)), sg.Column(ovrigt2, key='non3', visible=False)],
     [sg.Submit('Skapa paket', key='createSIP'), sg.Button('Visa/Dölj fält', key='fields')],
-    [sg.Output(size=(100,10))]
+    [sg.Output(size=(100,7))]
     ]
 
-window = sg.Window('FGS-Buddy v 0.8 - Viktor Lundberg', layout, font='Consolas 10')
+window = sg.Window('FGS-Buddy v 0.8.1 - Viktor Lundberg', layout, font='Consolas 10')
 
 forcedvaluesdict = {}
 allvalues = False
@@ -134,10 +163,12 @@ while True:
             if allvalues == False:
                 window['non'].Update(visible=True)
                 window['non2'].Update(visible=True)
+                window['non3'].Update(visible=True)
                 allvalues = True
             else:
                 window['non'].Update(visible=False)
                 window['non2'].Update(visible=False)
+                window['non3'].Update(visible=False)
                 allvalues = False
 
             
