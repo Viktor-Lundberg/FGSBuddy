@@ -38,12 +38,13 @@ class FgsMaker:
         if not debug:
             self.arkivbildare = values['arkivbildare']
             self.arkivbildarkod = f'{values["IDkodtyp"]}:{values["IDkod"]}'
-            self.submissionagreement =  values['submissionagreement']
+            self.submissionagreement = values['submissionagreement']
             self.pathToFiles = values['folder']
             self.organisation = values['levererandeorganisation']
-            self.recordstatus =values['recordstatus']
-            self.informationstyp = values['informationstyp']
+            self.recordstatus = values['recordstatus']
             self.system = values['system']
+            self.beskrivning = values['beskrivning']
+            self.GUIvalues = dict(values)
 
 
 
@@ -62,13 +63,20 @@ class FgsMaker:
         xmlFile = etree.ElementTree(rotelement)
         rotelement.set(schemaLocation, 'http://www.loc.gov/METS/ http://xml.ra.se/e-arkiv/METS/CSPackageMETS.xsd ExtensionMETS http://xml.ra.se/e-arkiv/METS/CSPackageExtensionMETS.xsd')
         rotelement.set('OBJID', str(uuid.uuid4()))
-        rotelement.set('TYPE', self.informationstyp)
+        rotelement.set('TYPE', self.GUIvalues['informationstyp'])
         rotelement.set('PROFILE', 'http://xml.ra.se/e-arkiv/METS/CommonSpecificationSwedenPackageProfile.xml')
-        
+        if self.GUIvalues['beskrivning'] != '':
+            rotelement.set('LABEL', self.GUIvalues['beskrivning'])
+        if self.GUIvalues['informationstypsspecifikation'] != '':
+            rotelement.set(str(QName(ns.get('ext'),'CONTENTTYPESPECIFICATION')),self.GUIvalues['informationstypsspecifikation'])
+
+
+
         # Skapar metsHdr
         metsHdr = etree.SubElement(rotelement, str(QName(ns.get('mets'),'metsHdr')))
         metsHdr.set('CREATEDATE', datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'))
-        metsHdr.set(str(QName(ns.get('ext'),'OAISSTATUS')),'SIP')                                                     
+        metsHdr.set(str(QName(ns.get('ext'),'OAISSTATUS')),'SIP')
+        metsHdr.set('RECORDSTATUS', self.GUIvalues['recordstatus'])                                                     
         
         # Skapar agents
         agentArkivbildare = etree.SubElement(metsHdr, str(QName(ns.get('mets'),'agent')))
