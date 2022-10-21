@@ -61,9 +61,9 @@ information = [
     [sg.Text('Informationstyp*', size=32), sg.Combo(['ERMS','Personnel','Medical record','Economics','Databases','Webpages', 'GIS', 'No specification', 'AIC', 'Archival information','Unstructured', 'Single records', 'Publication'], default_value='ERMS', key='informationstyp')],
     [sg.Text('Informationstypsspecifikation', size=32),sg.Input(key='informationstypsspecifikation')],
     [sg.Text('Tidsomfång', size=32), sg.CalendarButton('Startdatum', target='startdatum', format='%Y-%m-%d',no_titlebar=False), sg.Input(key='startdatum', size=(10,1)), sg.Text('-'), sg.Input(key='slutdatum', size=(10,1)),sg.CalendarButton('Slutdatum', target='slutdatum', format='%Y-%m-%d',no_titlebar=False)],
-    [sg.Text('Informationsklass', size=32), sg.Input(key='Informationsklass')],
+    [sg.Text('Informationsklass', size=32), sg.Input(key='informationsklass')],
     [sg.Text('Sekretess', size=32), sg.Combo(['Secrecy', 'PuL', 'Secrecy and PuL','GDPR','Ej angett'], default_value='Ej angett', key='sekretess')],
-    [sg.Text('Gallring', size=32),sg.Combo(['Yes', 'No'], default_value='No', key='Gallring') ],
+    [sg.Text('Gallring', size=32),sg.Combo(['Yes', 'No'], default_value='No', key='gallring') ],
 ]
 
 overforing = [
@@ -96,14 +96,11 @@ ovrigt2 = [
     [(sg.Text('Kontaktperson - Namn',size=32)), sg.Input(key='kontaktpersonnamn')],
     [(sg.Text('Kontaktperson - Kontaktuppgifter',size=32)), sg.Input(key='kontaktuppgifter')],
 ]
-mellanrum = [
-[sg.Text('', font='Consolas 12', size=25)]
-]
+
 
 # GUI layout
 layout = [
     [sg.Column(paketinformation, vertical_alignment='top'), sg.Column(information)],
-    #[sg.Text('', font='Consolas 8', size=25)],
     [sg.Column(parter, vertical_alignment='top'), sg.Column(system, vertical_alignment='top'), sg.Column(innehall, vertical_alignment='top')],
     [sg.pin(sg.Column(overforing, vertical_alignment='top', key='non', visible=False))],
     [sg.pin(sg.Column(ovrigt, key='non2', visible=False)), sg.Column(ovrigt2, key='non3', visible=False, vertical_alignment='top')],

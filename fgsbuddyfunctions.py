@@ -69,9 +69,24 @@ class FgsMaker:
             rotelement.set('LABEL', self.GUIvalues['beskrivning'])
         if self.GUIvalues['informationstypsspecifikation'] != '':
             rotelement.set(str(QName(ns.get('ext'),'CONTENTTYPESPECIFICATION')),self.GUIvalues['informationstypsspecifikation'])
-
-
-
+        if self.GUIvalues['systemtyp'] != '':
+            rotelement.set(str(QName(ns.get('ext'),'SYSTEMTYPE')),self.GUIvalues['systemtyp'])
+        if self.GUIvalues['overforing'] != '':
+            rotelement.set(str(QName(ns.get('ext'),'DATASUBMISSIONSESSION')),self.GUIvalues['overforing'])
+        if self.GUIvalues['overforingNR'] != '':
+            rotelement.set(str(QName(ns.get('ext'),'PACKAGENUMBER')),self.GUIvalues['overforingNR'])
+        if self.GUIvalues['arkivetsnamn'] != '':
+            rotelement.set(str(QName(ns.get('ext'),'ARCHIVALNAME')),self.GUIvalues['arkivetsnamn'])
+        rotelement.set(str(QName(ns.get('ext'),'APPRAISAL')),self.GUIvalues['gallring'])
+        if self.GUIvalues['sekretess'] != 'Ej angett':
+            rotelement.set(str(QName(ns.get('ext'),'ACCESSRESTRICT')),self.GUIvalues['sekretess'])
+        if self.GUIvalues['startdatum'] != '':
+            rotelement.set(str(QName(ns.get('ext'),'STARTDATE')),self.GUIvalues['startdatum'])
+        if self.GUIvalues['slutdatum'] != '':
+            rotelement.set(str(QName(ns.get('ext'),'ENDDATE')),self.GUIvalues['slutdatum'])
+        if self.GUIvalues['informationsklass'] != '':
+            rotelement.set(str(QName(ns.get('ext'),'INFORMATIONCLASS')),self.GUIvalues['informationsklass'])
+        
         # Skapar metsHdr
         metsHdr = etree.SubElement(rotelement, str(QName(ns.get('mets'),'metsHdr')))
         metsHdr.set('CREATEDATE', datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'))
@@ -79,28 +94,113 @@ class FgsMaker:
         metsHdr.set('RECORDSTATUS', self.GUIvalues['recordstatus'])                                                     
         
         # Skapar agents
+        # Arkivbildare
         agentArkivbildare = etree.SubElement(metsHdr, str(QName(ns.get('mets'),'agent')))
         agentArkivbildare.set('ROLE', "ARCHIVIST")
         agentArkivbildare.set('TYPE', "ORGANIZATION")
-        namelement = etree.SubElement(agentArkivbildare, str(QName(ns.get('mets'), 'name'))).text = self.arkivbildare
+        namelement = etree.SubElement(agentArkivbildare, str(QName(ns.get('mets'), 'name'))).text = self.GUIvalues['arkivbildare']
         identitetselement = etree.SubElement(agentArkivbildare, str(QName(ns.get('mets'), 'note'))).text = self.arkivbildarkod
         
-        agentLevererandeSystem = etree.SubElement(metsHdr, str(QName(ns.get('mets'),'agent')))
-        agentLevererandeSystem.set('ROLE', "ARCHIVIST")
-        agentLevererandeSystem.set('TYPE', "OTHER")
-        agentLevererandeSystem.set('OTHERTYPE', "SOFTWARE")
-        namelement = etree.SubElement(agentLevererandeSystem, str(QName(ns.get('mets'), 'name'))).text = self.system 
+        # System
+        agentSystem = etree.SubElement(metsHdr, str(QName(ns.get('mets'),'agent')))
+        agentSystem.set('ROLE', "ARCHIVIST")
+        agentSystem.set('TYPE', "OTHER")
+        agentSystem.set('OTHERTYPE', "SOFTWARE")
+        namelement = etree.SubElement(agentSystem, str(QName(ns.get('mets'), 'name'))).text = self.system 
+        if self.GUIvalues['systemversion'] != '':
+            noteelement = etree.SubElement(agentSystem, str(QName(ns.get('mets'), 'note'))).text = self.GUIvalues['systemversion'] 
 
+        # Levererande organisation
         agentLevererandeOrganisation = etree.SubElement(metsHdr, str(QName(ns.get('mets'),'agent')))
         agentLevererandeOrganisation.set('ROLE', "CREATOR")
         agentLevererandeOrganisation.set('TYPE', "ORGANIZATION")
         namelement = etree.SubElement(agentLevererandeOrganisation, str(QName(ns.get('mets'), 'name'))).text = self.organisation
+        if self.GUIvalues['IDkodlevererandeorganisation'] != '':
+            identitetselement = etree.SubElement(agentLevererandeOrganisation, str(QName(ns.get('mets'), 'note'))).text = f'{self.GUIvalues["IDkodtyplevererandeorganisation"]}:{self.GUIvalues["IDkodlevererandeorganisation"]}'
+
+        # Producerande organisation
+        if self.GUIvalues['prodorgnamn'] !='':
+            agentProducerandeOrganisation = etree.SubElement(metsHdr, str(QName(ns.get('mets'),'agent')))
+            agentProducerandeOrganisation.set('ROLE', "OTHER")
+            agentProducerandeOrganisation.set('OTHERROLE', "PRODUCER")
+            agentProducerandeOrganisation.set('TYPE', "ORGANIZATION")
+            namelement = etree.SubElement(agentProducerandeOrganisation, str(QName(ns.get('mets'), 'name'))).text = self.GUIvalues['prodorgnamn']
+            if self.GUIvalues['prodorgIDkod'] !='':
+                identitetselement = etree.SubElement(agentProducerandeOrganisation, str(QName(ns.get('mets'), 'note'))).text = f'{self.GUIvalues["prodorgIDkodtyp"]}:{self.GUIvalues["prodorgIDkod"]}'
+
+        # Avsändande organisation
+        if self.GUIvalues['avsandandeorgnamn'] !='':
+            agentAvsandandeOrganisation = etree.SubElement(metsHdr, str(QName(ns.get('mets'),'agent')))
+            agentAvsandandeOrganisation.set('ROLE', "OTHER")
+            agentAvsandandeOrganisation.set('OTHERROLE', "SUBMITTER")
+            agentAvsandandeOrganisation.set('TYPE', "ORGANIZATION")
+            namelement = etree.SubElement(agentAvsandandeOrganisation, str(QName(ns.get('mets'), 'name'))).text = self.GUIvalues['avsandandeorgnamn']
+            if self.GUIvalues['avsandandeorgIDkod'] !='':
+                identitetselement = etree.SubElement(agentAvsandandeOrganisation, str(QName(ns.get('mets'), 'note'))).text = f'{self.GUIvalues["avsandandeorgIDkodtyp"]}:{self.GUIvalues["avsandandeorgIDkod"]}'
+
+        # Informationsägande organisation
+        if self.GUIvalues['infoagarenamn'] !='':
+            agentIpownerOrganisation = etree.SubElement(metsHdr, str(QName(ns.get('mets'),'agent')))
+            agentIpownerOrganisation.set('ROLE', "IPOWNER")
+            agentIpownerOrganisation.set('TYPE', "ORGANIZATION")
+            namelement = etree.SubElement(agentIpownerOrganisation, str(QName(ns.get('mets'), 'name'))).text = self.GUIvalues['infoagarenamn']
+            if self.GUIvalues['infoagareIDkod'] !='':
+                identitetselement = etree.SubElement(agentIpownerOrganisation, str(QName(ns.get('mets'), 'note'))).text = f'{self.GUIvalues["infoagareIDkodtyp"]}:{self.GUIvalues["infoagareIDkod"]}'
+
+        #  Konsult
+        if self.GUIvalues['konsultnamn'] !='':
+            konsult = etree.SubElement(metsHdr, str(QName(ns.get('mets'),'agent')))
+            konsult.set('ROLE', "EDITOR")
+            konsult.set('TYPE', "ORGANIZATION")
+            namelement = etree.SubElement(konsult, str(QName(ns.get('mets'), 'name'))).text = self.GUIvalues['konsultnamn']
+            if self.GUIvalues['konsultIDkod'] !='':
+                identitetselement = etree.SubElement(konsult, str(QName(ns.get('mets'), 'note'))).text = f'{self.GUIvalues["konsultIDkodtyp"]}:{self.GUIvalues["konsultIDkod"]}'
+
+        #  Levererande system
+        if self.GUIvalues['levererandesystemnamn'] !='':
+            agentLevererandeSystem = etree.SubElement(metsHdr, str(QName(ns.get('mets'),'agent')))
+            agentLevererandeSystem.set('ROLE', "CREATOR")
+            agentLevererandeSystem.set('TYPE', "OTHER")
+            agentLevererandeSystem.set('OTHERTYPE', "SOFTWARE")
+            namelement = etree.SubElement(agentLevererandeSystem, str(QName(ns.get('mets'), 'name'))).text = self.GUIvalues['levererandesystemnamn']
+            if self.GUIvalues['levererandesystemversion'] !='':
+                noteelement = etree.SubElement(agentLevererandeSystem, str(QName(ns.get('mets'), 'note'))).text = self.GUIvalues['levererandesystemversion']
+
+        #  Kontaktperson
+        if self.GUIvalues['kontaktpersonnamn'] !='':
+            agentKontaktperson = etree.SubElement(metsHdr, str(QName(ns.get('mets'),'agent')))
+            agentKontaktperson.set('ROLE', "CREATOR")
+            agentKontaktperson.set('TYPE', "INDIVIDUAL")
+            namelement = etree.SubElement(agentKontaktperson, str(QName(ns.get('mets'), 'name'))).text = self.GUIvalues['kontaktpersonnamn']
+            if self.GUIvalues['kontaktuppgifter'] !='':
+                noteelement = etree.SubElement(agentKontaktperson, str(QName(ns.get('mets'), 'note'))).text = self.GUIvalues['kontaktuppgifter']
+
+        # Mottagare
+        if self.GUIvalues['mottagarenamn'] !='':
+            agentMottagare = etree.SubElement(metsHdr, str(QName(ns.get('mets'),'agent')))
+            agentMottagare.set('ROLE', "PRESERVATION")
+            agentMottagare.set('TYPE', "ORGANIZATION")
+            namelement = etree.SubElement(agentMottagare, str(QName(ns.get('mets'), 'name'))).text = self.GUIvalues['mottagarenamn']
+            if self.GUIvalues['mottagareIDkod'] !='':
+                identitetselement = etree.SubElement(agentMottagare, str(QName(ns.get('mets'), 'note'))).text = f'{self.GUIvalues["mottagareIDkodtyp"]}:{self.GUIvalues["mottagareIDkod"]}'
 
         # Skapar altrecordID
         altRecordID = etree.SubElement(metsHdr, str(QName(ns.get('mets'),'altRecordID')))
         altRecordID.set('TYPE', 'SUBMISSIONAGREEMENT')
         altRecordID.text = self.submissionagreement
-        
+        if self.GUIvalues['formersubmissionagreement'] != '':
+            altRecordID = etree.SubElement(metsHdr, str(QName(ns.get('mets'),'altRecordID')))
+            altRecordID.set('TYPE', 'PREVIOUSSUBMISSIONAGREEMENT')
+            altRecordID.text = self.GUIvalues['formersubmissionagreement']
+        if self.GUIvalues['arkivetsreferenskod'] != '':
+            altRecordID = etree.SubElement(metsHdr, str(QName(ns.get('mets'),'altRecordID')))
+            altRecordID.text = self.GUIvalues['arkivetsreferenskod']
+            altRecordID.set('TYPE', 'REFERENCECODE')
+        if self.GUIvalues['tidigarereferenskod'] != '':
+            altRecordID = etree.SubElement(metsHdr, str(QName(ns.get('mets'),'altRecordID')))
+            altRecordID.text = self.GUIvalues['tidigarereferenskod']
+            altRecordID.set('TYPE', 'PREVIOUSREFERENCECODE')
+
         # Skapar dmdSec
         #dmdSec = etree.SubElement(rotelement, str(QName(ns.get('mets'), 'dmdSec')))
 
@@ -132,7 +232,6 @@ class FgsMaker:
                 fLocat.set(str(QName(ns.get('xlink'),'type')),'simple')
                 fLocat.set(str(QName(ns.get('xlink'),'href')),filedict[k]['filelink'])
                 
-
         # Skapar structMap
         structMap = etree.SubElement(rotelement, str(QName(ns.get('mets'), 'structMap')))
         structMap.set('LABEL', 'No structMap defined in this information package')
