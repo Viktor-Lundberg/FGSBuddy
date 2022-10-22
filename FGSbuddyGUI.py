@@ -1,4 +1,6 @@
 import os
+import time
+from turtle import update
 import PySimpleGUI as sg
 import fgsbuddyfunctions as FGSfunc
 
@@ -15,6 +17,9 @@ paketinformation = [
     [sg.Text('Beskrivning', tooltip='<mets>?', size=32),sg.Input(key='beskrivning', tooltip='''?''')],
     [sg.Text('Leveransöverenskommelse*', size=32), sg.Input('Submissionagremmentnernrenre',key='submissionagreement')],
     [sg.Text('Tidigare leveransöverenskommelse', size=32),sg.Input(key='formersubmissionagreement')],
+    [(sg.Text('Överföring', size=32)), sg.Input(key='overforing')],
+    [sg.Text('Ordningsnummer inom överföring', size=32), sg.Input(key='overforingNR')]
+
 ]
 
 parter = [
@@ -66,10 +71,8 @@ information = [
     [sg.Text('Gallring', size=32),sg.Combo(['Yes', 'No'], default_value='No', key='gallring') ],
 ]
 
-overforing = [
-    [sg.Text('Överföring', font='Arial 12 bold', size=30)],
-    [(sg.Text('Överföring', size=32)), sg.Input(key='overforing')],
-    [ sg.Text('Ordningsnummer inom överföring', size=32), sg.Input(key='overforingNR')]
+space = [
+    [sg.Text('', font='Arial 8 bold', size=30)],
     ]
 
 ovrigt = [
@@ -101,15 +104,15 @@ ovrigt2 = [
 # GUI layout
 layout = [
     [sg.Column(paketinformation, vertical_alignment='top'), sg.Column(information)],
+    [sg.Column(space)],
     [sg.Column(parter, vertical_alignment='top'), sg.Column(system, vertical_alignment='top'), sg.Column(innehall, vertical_alignment='top')],
-    [sg.pin(sg.Column(overforing, vertical_alignment='top', key='non', visible=False))],
     [sg.pin(sg.Column(ovrigt, key='non2', visible=False)), sg.Column(ovrigt2, key='non3', visible=False, vertical_alignment='top')],
     [sg.Submit('Skapa paket', key='createSIP', size=15), sg.Button('Visa alla fält', key='fields', size=15)],
-    #[sg.Output(size=(165,7), key='output')]
+    [sg.Output(size=(165,5), key='output', pad=0)]
     ]
 
 # Skapar "menyfönstret"
-window = sg.Window('FGS-Buddy v 0.8.3 - Viktor Lundberg OBS! WORK IN PROGRESS! ALLA VÄRDEN KOMMER INTE MED I SIP.xml!', layout, font='Consolas 10')
+window = sg.Window('FGS-Buddy v 0.9.1 - Viktor Lundberg', layout, font='Consolas 10')
 
 # Variabler för att kontrollera obligatoriska värden samt trigger för att visa/dölja alla element i layouten.
 forcedvaluesdict = {}
@@ -123,7 +126,8 @@ while True:
             break
         # Startar processen för att skapa FGS-paket om användaren trycker på "skapa paket"-knappen
         case 'createSIP':
-            #window.FindElement('output').Update('')
+            window.FindElement('output').Update('')
+            window.refresh()
             metadatafile = False
             schemafile = False
             subfolders = False
@@ -136,7 +140,6 @@ while True:
                 forcedvaluesdict['Arkivbildare'] = values['arkivbildare']
                 forcedvaluesdict['Identitetskod'] = values['IDkod']
                 forcedvaluesdict['Levererande organisation'] = values['levererandeorganisation']
-                print('Du måste fylla i alla obligatoriska värden.')
                 # Loopar igenom dicten
                 for k, v in forcedvaluesdict.items():
                     # Returnerar de värden som saknas till användaren.
@@ -145,9 +148,10 @@ while True:
                 
             # Om allt är ok skapa paketet med inkommande parametrar.
             else:
-                fgsPackage = FGSfunc.FgsMaker()
-                fgsPackage.inputValues(values, False)
-                if values['folder']== '':
+                print(f'Skapar FGS-paketet...')
+                window.refresh()
+                fgsPackage = FGSfunc.FgsMaker(values)
+                if values['folder'] == '':
                     folder = os.path.join(cwd)
                 else:
                     folder = os.path.join(values['folder'])
@@ -159,20 +163,24 @@ while True:
                     schemafile = values['schemafile']
                 fgsPackage.collectFiles(folder, subfolders, metadatafile, schemafile)
                 fgsPackage.createSip()
-                #fgsPackage.createFgsPackage(cwd)
+                fgsPackage.createFgsPackage(cwd)
+                time.sleep(0.3)
+                window.FindElement('output').update('')
+                window.refresh()
+                print(fgsPackage.output)
         
         # Visar eller döljer layout om användaren trycker på knappen
         case 'fields':
             if allvalues == False:
-                window['non'].Update(visible=True)
                 window['non2'].Update(visible=True)
                 window['non3'].Update(visible=True)
+                window.refresh()
                 window['fields'].Update('Dölj fält')
                 allvalues = True
             else:
-                window['non'].Update(visible=False)
                 window['non2'].Update(visible=False)
                 window['non3'].Update(visible=False)
+                window.refresh()
                 window['fields'].Update('Visa alla fält')
                 allvalues = False
 

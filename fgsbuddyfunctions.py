@@ -7,46 +7,15 @@ import sys
 import time
 import uuid
 from xml.etree.ElementTree import QName
-from rich.progress import track
-from rich.progress import Progress
 from lxml import etree
 
 cwd = os.getcwd()
-print(cwd)
-testfolder = os.path.join(cwd, 'Testis')
-#fileFolder = cwd
-print(testfolder)
+
 
 class FgsMaker:
-    def __init__(self):
+    def __init__(self, values):
         self.filedict = {}
-        self.arkivbildare = ''
-        self.arkivbildarkod = ''
-        self.pathToFiles = ''
-
-    def inputValues (self, values=False, debug = False):
-        if debug:
-            self.arkivbildare = 'TESTARKIVBILDAREN'
-            self.arkivbildarkod = '12323213123'
-            self.pathToFiles = testfolder
-            self.organisation = 'TESTORGANISATIONEN'
-            self.subfolders = True
-            self.submissionagreement = '123456789'
-            self.informationstyp = 'ERMS'
-            self.system = 'Systemet'
-        
-        if not debug:
-            self.arkivbildare = values['arkivbildare']
-            self.arkivbildarkod = f'{values["IDkodtyp"]}:{values["IDkod"]}'
-            self.submissionagreement = values['submissionagreement']
-            self.pathToFiles = values['folder']
-            self.organisation = values['levererandeorganisation']
-            self.recordstatus = values['recordstatus']
-            self.system = values['system']
-            self.beskrivning = values['beskrivning']
-            self.GUIvalues = dict(values)
-
-
+        self.GUIvalues = dict(values)
 
        
     def createSip(self):
@@ -99,14 +68,14 @@ class FgsMaker:
         agentArkivbildare.set('ROLE', "ARCHIVIST")
         agentArkivbildare.set('TYPE', "ORGANIZATION")
         namelement = etree.SubElement(agentArkivbildare, str(QName(ns.get('mets'), 'name'))).text = self.GUIvalues['arkivbildare']
-        identitetselement = etree.SubElement(agentArkivbildare, str(QName(ns.get('mets'), 'note'))).text = self.arkivbildarkod
+        identitetselement = etree.SubElement(agentArkivbildare, str(QName(ns.get('mets'), 'note'))).text = f'{self.GUIvalues["IDkodtyp"]}:{self.GUIvalues["IDkod"]}'
         
         # System
         agentSystem = etree.SubElement(metsHdr, str(QName(ns.get('mets'),'agent')))
         agentSystem.set('ROLE', "ARCHIVIST")
         agentSystem.set('TYPE', "OTHER")
         agentSystem.set('OTHERTYPE', "SOFTWARE")
-        namelement = etree.SubElement(agentSystem, str(QName(ns.get('mets'), 'name'))).text = self.system 
+        namelement = etree.SubElement(agentSystem, str(QName(ns.get('mets'), 'name'))).text = self.GUIvalues['system']
         if self.GUIvalues['systemversion'] != '':
             noteelement = etree.SubElement(agentSystem, str(QName(ns.get('mets'), 'note'))).text = self.GUIvalues['systemversion'] 
 
@@ -114,7 +83,7 @@ class FgsMaker:
         agentLevererandeOrganisation = etree.SubElement(metsHdr, str(QName(ns.get('mets'),'agent')))
         agentLevererandeOrganisation.set('ROLE', "CREATOR")
         agentLevererandeOrganisation.set('TYPE', "ORGANIZATION")
-        namelement = etree.SubElement(agentLevererandeOrganisation, str(QName(ns.get('mets'), 'name'))).text = self.organisation
+        namelement = etree.SubElement(agentLevererandeOrganisation, str(QName(ns.get('mets'), 'name'))).text = self.GUIvalues['levererandeorganisation']
         if self.GUIvalues['IDkodlevererandeorganisation'] != '':
             identitetselement = etree.SubElement(agentLevererandeOrganisation, str(QName(ns.get('mets'), 'note'))).text = f'{self.GUIvalues["IDkodtyplevererandeorganisation"]}:{self.GUIvalues["IDkodlevererandeorganisation"]}'
 
@@ -187,7 +156,7 @@ class FgsMaker:
         # Skapar altrecordID
         altRecordID = etree.SubElement(metsHdr, str(QName(ns.get('mets'),'altRecordID')))
         altRecordID.set('TYPE', 'SUBMISSIONAGREEMENT')
-        altRecordID.text = self.submissionagreement
+        altRecordID.text = self.GUIvalues['submissionagreement']
         if self.GUIvalues['formersubmissionagreement'] != '':
             altRecordID = etree.SubElement(metsHdr, str(QName(ns.get('mets'),'altRecordID')))
             altRecordID.set('TYPE', 'PREVIOUSSUBMISSIONAGREEMENT')
@@ -209,8 +178,8 @@ class FgsMaker:
         fileGrp = etree.SubElement(fileSec, str(QName(ns.get('mets'), 'fileGrp')))
         
         #Filer använder värden i filedict som populerats via funktionen "collectFiles"
-        for k, v in track(filedict.items(), 'Skapar Sip.xml'):
-            # Hoppar över filen om det är samma som pythonfilen som körs samt ignorerar andra pythonfiler
+        for k, v in filedict.items():
+            # Hoppar över filen om det är samma som filen som körs.
             if k == os.path.basename(sys.argv[0]):
                 continue
             else:
@@ -267,7 +236,7 @@ class FgsMaker:
                     
 
         # Samlar metadata om filerna och lägger till i dicten. (Track används för att skapa "Progressbar")
-        for  k, v in track(filedict.items(), description=f"Genererar metadata för filer"):
+        for  k, v in filedict.items():
             # Samlar metadata
             #print(f'Genererar metadata för {k}')
             filePathFromDict = filedict[k]['path']
@@ -283,8 +252,6 @@ class FgsMaker:
             # file:///Content/undermapp1/undermapp2/engottigfil.txt'
             #relativeFilePath = filePathFromDict.replace(directory,'').replace(k,'').replace('\\','/')
             relativeFilePath = filePathFromDict.replace(directory,'').replace(originalFileName,'').replace('\\','/')
-            print(filePathFromDict)
-            print(f'detta är {relativeFilePath}')
             fileLink = f'file:///Content{relativeFilePath}{fgsFileName}'
 
             # Lägger i dict           
@@ -314,7 +281,6 @@ class FgsMaker:
             # Tar fram den relativa sökvägen genom att ta hela filsökvägen - {directory} för att använda till att skapa fileLink.
             # C:\mappen\undermapp1\undermapp2\Engöttigfil.txt --> undermapp1/undermapp2
             # file:///Content/undermapp1/undermapp2/engottigfil.txt'
-            print(f'Detta är directory {directory}')
             #relativeFilePath = metadatafilepath.replace(directory,'').replace(originalFileName,'').replace('\\','/')
             relativeFilePath = '/'
             
@@ -337,9 +303,7 @@ class FgsMaker:
         
         # Schemafile
         if schemafile:
-            print('jobbar med schema')
             metadatafilepath = os.path.join(schemafile)
-            print(metadatafilepath)
             fileSize = str(os.stat(metadatafilepath).st_size)
             createdDate = datetime.datetime.utcfromtimestamp(os.stat(metadatafilepath).st_mtime).strftime('%Y-%m-%dT%H:%M:%S')
             hashValue = self.hashfunction(metadatafilepath)
@@ -351,7 +315,6 @@ class FgsMaker:
             # Tar fram den relativa sökvägen genom att ta hela filsökvägen - {directory} för att använda till att skapa fileLink.
             # C:\mappen\undermapp1\undermapp2\Engöttigfil.txt --> undermapp1/undermapp2
             # file:///Content/undermapp1/undermapp2/engottigfil.txt'
-            print(f'Detta är directory {directory}')
             #relativeFilePath = metadatafilepath.replace(directory,'').replace(originalFileName,'').replace('\\','/')
             relativeFilePath = '/'
             
@@ -405,14 +368,13 @@ class FgsMaker:
         os.mkdir(schemaPath)
 
         
-        # Lägger paketets filer i contentmappen (track används för att skapa "progressbar")
+        # Lägger paketets filer i contentmappen
         filedict = self.filedict
         i = 0
-        for k, v in track(filedict.items(), description="Preparerar FGS-paketet"):
+        for k, v in filedict.items():
             if filedict[k]['category'] == 'metadata':
                 shutil.copy2(filedict[k]['path'], metadataPath)
             elif filedict[k]['category'] == 'schema':
-                print(f'Nu kör vi {k}')
                 shutil.copy2(filedict[k]['path'], schemaPath)       
             else:
                 # Tar fram den relativa sökvägen till filen genom att lägga ihop cwd + relativ path. Skapar katalog i FGSpackage om den inte finns.
@@ -433,17 +395,14 @@ class FgsMaker:
                 
 
         # Skapar zippen
-        with Progress() as progress:
-            task = progress.add_task('Skapar FGS-paket', total=4)
-            progress.update(task, advance=10)
-            packageTime = datetime.datetime.now().strftime('%Y_%m_%dT%H_%M_%S')
-            progress.update(task, advance=15)
-            shutil.make_archive(f'FGS_Package_{packageTime}','zip', parentDir)
-            progress.update(task, advance=25)
-            # Tar bort katalogen FGSpackage efter att den zippats.
-            shutil.rmtree(parentDir)
-            progress.update(task, advance=50)
-        print(f'Paketet FGS_Package_{packageTime}.zip genererades i katalogen {cwd}')     
+        packageTime = datetime.datetime.now().strftime('%Y_%m_%dT%H_%M_%S')
+        #shutil.make_archive(f'FGS_Package_{packageTime}','zip', parentDir)
+        shutil.make_archive(f'{self.GUIvalues["arkivbildare"]}_{self.GUIvalues["system"]}_{packageTime}','zip', parentDir)
+        # Tar bort katalogen FGSpackage efter att den zippats.
+        shutil.rmtree(parentDir)
+        self.output = ''
+        self.output = f'FGS-paketet "{self.GUIvalues["arkivbildare"]}_{self.GUIvalues["system"]}_{packageTime}.zip" genererades i katalogen {cwd}'     
+             
 
 '''
 # Startar Skriptet
