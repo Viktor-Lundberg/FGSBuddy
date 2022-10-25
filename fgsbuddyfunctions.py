@@ -318,7 +318,7 @@ class FgsMaker:
             #relativeFilePath = metadatafilepath.replace(directory,'').replace(originalFileName,'').replace('\\','/')
             relativeFilePath = '/'
             
-            fileLink = f'file:///Metadata/{fgsFileName}'
+            fileLink = f'file:///System/{fgsFileName}'
 
             filedict[metadatafilepath] = filedict.get(metadatafilepath,{'path':metadatafilepath})
 

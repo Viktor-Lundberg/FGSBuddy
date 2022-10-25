@@ -1,11 +1,23 @@
 import os
+import re
 import time
-from turtle import update
 import PySimpleGUI as sg
 import fgsbuddyfunctions as FGSfunc
+import json
+
 
 # Current working directory
 cwd = os.getcwd()
+
+# Laddar tooltipsfil
+tooltipsfile = open('tooltips.json', encoding='utf-8')
+tt = json.load(tooltipsfile)
+# Fixar jsonformateringen i tooltips \\\n --> \n
+for k, v in tt.items():
+    tt[k] = v.replace('\\', '')
+
+
+#print(tt)
 
 # Sätter färgtema
 sg.theme('greenMono') #LightGreen2 DarkBlue3 #reddit greenMono
@@ -13,44 +25,42 @@ sg.theme('greenMono') #LightGreen2 DarkBlue3 #reddit greenMono
 # Listor med element som utgör olika delar av layouten. 
 paketinformation = [
     [sg.Text('Övergripande paketinformation', font='Arial 12 bold',size=30)], 
-    [sg.Text('Status*', size=32), sg.Combo(['NEW', 'SUPPLEMENT', 'REPLACEMENT','TEST','VERSION', 'OTHER'], default_value='NEW', key='recordstatus') ],
-    [sg.Text('Beskrivning', tooltip='<mets>?', size=32),sg.Input(key='beskrivning', tooltip='''?''')],
-    [sg.Text('Leveransöverenskommelse*', size=32), sg.Input('Submissionagremmentnernrenre',key='submissionagreement')],
-    [sg.Text('Tidigare leveransöverenskommelse', size=32),sg.Input(key='formersubmissionagreement')],
-    [(sg.Text('Överföring', size=32)), sg.Input(key='overforing')],
-    [sg.Text('Ordningsnummer inom överföring', size=32), sg.Input(key='overforingNR')]
+    [sg.Text('Status*', size=32, tooltip=tt['StatusT']), sg.Combo(['NEW', 'SUPPLEMENT', 'REPLACEMENT','TEST','VERSION', 'OTHER'], default_value='NEW', key='recordstatus', tooltip=tt['Status']) ],
+    [sg.Text('Beskrivning', tooltip=tt['BeskrivningT'], size=32),sg.Input(key='beskrivning', tooltip=tt['Beskrivning'])],
+    [sg.Text('Leveransöverenskommelse*', size=32, tooltip=tt['LeveransoverenskommelseT']), sg.Input('Submissionagremmentnernrenre',key='submissionagreement',tooltip=tt['Leveransoverenskommelse'])],
+    [sg.Text('Tidigare leveransöverenskommelse', size=32, tooltip=tt['TidigareLeveransoverenskommelseT']),sg.Input(key='formersubmissionagreement', tooltip=tt['TidigareLeveransoverenskommelse'])],
+    [(sg.Text('Överföring', size=32, tooltip=tt['OverforingT'])), sg.Input(key='overforing', tooltip=tt['Overforing'])],
+    [sg.Text('Ordningsnummer inom överföring', size=32, tooltip=tt['OrdningsnummerT']), sg.Input(key='overforingNR',tooltip=tt['Ordningsnummer'])]
 
 ]
 
 parter = [
     [sg.Text('Arkivbildare', font='Arial 12 bold', size=25)],    
-    [sg.Text('Arkivbildare - Namn*', tooltip='<mets><metsHdr><agent ROLE=”ARCHIVIST” TYPE=”ORGANIZATION”><name>[Arkivbildare Namn]') ],
-    [sg.Input('Arkivbildaren',key='arkivbildare', tooltip='''Namn på arkivbildaren. 
-Arkivbildaren är den organisation som har skapat arkivmaterialet''',)],
-    [sg.Text('Arkivbildare - Identitetskod*')],
-    [sg.Combo(['VAT', 'DUNS', 'ORG','HSA','Local', 'URI'], default_value='ORG', key='IDkodtyp'),sg.Input('koden', key='IDkod',size=35)],
-    [sg.Text('Levererande organisation - Namn*', tooltip='<mets><metsHdr><agent ROLE="Creator" TYPE=”ORGANIZATION”><name>[Arkivbildare Namn]') ],
-    [sg.Input('Organisationen',key='levererandeorganisation', tooltip='''Namn på den organisation som levererat SIP:en till e-arkivet. 
-Denna organisation är ofta identisk med den som anges som arkivbildare. Det skiljer sig i de fall där en myndighet övertagit en annan myndighets arkiv''')],
-    [sg.Text('Levererande organisation - Identitetskod')],
-    [sg.Combo(['VAT', 'DUNS', 'ORG','HSA','Local', 'URI'], default_value='ORG', key='IDkodtyplevererandeorganisation'),sg.Input('koden', key='IDkodlevererandeorganisation',size=35)],
+    [sg.Text('Arkivbildare - Namn*', tooltip=tt['ArkivbildarenamnT']) ],
+    [sg.Input('Arkivbildaren',key='arkivbildare', tooltip=tt['Arkivbildarenamn'])],
+    [sg.Text('Arkivbildare - Identitetskod*', tooltip=tt['ArkivbildareIDkodT'])],
+    [sg.Combo(['VAT', 'DUNS', 'ORG','HSA','Local', 'URI'], default_value='ORG', key='IDkodtyp'),sg.Input('koden', key='IDkod',size=35, tooltip=tt['ArkivbildareIDkod'])],
+    [sg.Text('Levererande organisation - Namn*', tooltip=tt['LevererandeorganisationnamnT']) ],
+    [sg.Input('Organisationen',key='levererandeorganisation', tooltip=tt['Levererandeorganisationnamn'])],
+    [sg.Text('Levererande organisation - Identitetskod', tooltip=tt['LevererandeorganisationIDkodT'])],
+    [sg.Combo(['VAT', 'DUNS', 'ORG','HSA','Local', 'URI'], default_value='ORG', key='IDkodtyplevererandeorganisation'),sg.Input('koden', key='IDkodlevererandeorganisation',size=35, tooltip=tt['LevererandeorganisationIDkod'])],
     
     ]
 
 system = [
     [sg.Text('Källsystem', font='Arial 12 bold', size=30)], 
-    [sg.Text('Systemnamn*')],
-    [sg.Input(default_text ='SYSTEMET', key='system')],
-    [sg.Text('Systemversion')],
-    [sg.Input(key='systemversion')],
-    [sg.Text('Systemtyp')],
-    [sg.Input(key='systemtyp')],
+    [sg.Text('Systemnamn*', tooltip=tt['SystemnamnT'])],
+    [sg.Input(default_text ='SYSTEMET', key='system', tooltip=tt['Systemnamn'])],
+    [sg.Text('Systemversion',tooltip=tt['SystemversionT'])],
+    [sg.Input(key='systemversion', tooltip=tt['Systemversion'])],
+    [sg.Text('Systemtyp', tooltip=tt['SystemtypT'])],
+    [sg.Input(key='systemtyp', tooltip=tt['Systemtyp'])],
 
     ]
 
 innehall = [  
     [sg.Text('Innehåll', font='Arial 12 bold', size=30)],
-    [sg.Text('Sökväg till filer*')],
+    [sg.Text('Sökväg till filer')],
     [sg.Input(default_text=cwd,tooltip="Välj katalog"), sg.FolderBrowse('Välj katalog',key="folder", initial_folder=os.path.join(cwd))],
     [sg.Text('Inkludera undermappar')],
     [sg.Radio('Ja', 'subfolders', default=False, key='subfolderstrue'), sg.Radio('Nej', 'subfolders', default=True, key='subfoldersfalse')],
@@ -63,12 +73,12 @@ innehall = [
 
 information = [
     [sg.Text('Information', font='Arial 12 bold', size=30)],
-    [sg.Text('Informationstyp*', size=32), sg.Combo(['ERMS','Personnel','Medical record','Economics','Databases','Webpages', 'GIS', 'No specification', 'AIC', 'Archival information','Unstructured', 'Single records', 'Publication'], default_value='ERMS', key='informationstyp')],
-    [sg.Text('Informationstypsspecifikation', size=32),sg.Input(key='informationstypsspecifikation')],
-    [sg.Text('Tidsomfång', size=32), sg.CalendarButton('Startdatum', target='startdatum', format='%Y-%m-%d',no_titlebar=False), sg.Input(key='startdatum', size=(10,1)), sg.Text('-'), sg.Input(key='slutdatum', size=(10,1)),sg.CalendarButton('Slutdatum', target='slutdatum', format='%Y-%m-%d',no_titlebar=False)],
-    [sg.Text('Informationsklass', size=32), sg.Input(key='informationsklass')],
-    [sg.Text('Sekretess', size=32), sg.Combo(['Secrecy', 'PuL', 'Secrecy and PuL','GDPR','Ej angett'], default_value='Ej angett', key='sekretess')],
-    [sg.Text('Gallring', size=32),sg.Combo(['Yes', 'No'], default_value='No', key='gallring') ],
+    [sg.Text('Informationstyp*', size=32, tooltip=tt['InformationstypT']), sg.Combo(['ERMS','Personnel','Medical record','Economics','Databases','Webpages', 'GIS', 'No specification', 'AIC', 'Archival information','Unstructured', 'Single records', 'Publication'], default_value='ERMS', key='informationstyp', tooltip=tt['Informationstyp'])],
+    [sg.Text('Informationstypsspecifikation', size=32, tooltip=tt['InformationstypsspecifikationT']),sg.Input(key='informationstypsspecifikation', tooltip=tt['Informationstypsspecifikation'])],
+    [sg.Text('Tidsomfång', size=32), sg.CalendarButton('Startdatum', target='startdatum', format='%Y-%m-%d',no_titlebar=False, tooltip=tt['StartdatumT']), sg.Input(key='startdatum', size=(10,1), tooltip=tt['Startdatum']), sg.Text('-'), sg.Input(key='slutdatum', size=(10,1), tooltip=tt['Slutdatum']),sg.CalendarButton('Slutdatum', target='slutdatum', format='%Y-%m-%d',no_titlebar=False, tooltip=tt['SlutdatumT'])],
+    [sg.Text('Informationsklass', size=32, tooltip=tt['InformationsklassT']), sg.Input(key='informationsklass', tooltip=tt['Informationsklass'])],
+    [sg.Text('Sekretess', size=32, tooltip=tt['SekretessT']), sg.Combo(['Secrecy', 'PuL', 'Secrecy and PuL','GDPR','Ej angett'], default_value='Ej angett', key='sekretess', tooltip=tt['Sekretess'])],
+    [sg.Text('Gallring', size=32, tooltip=tt['GallringT']),sg.Combo(['Yes', 'No'], default_value='No', key='gallring', tooltip=tt['Gallring']) ],
 ]
 
 space = [
@@ -77,27 +87,27 @@ space = [
 
 ovrigt = [
     [sg.Text('Övrig information', font='Arial 12 bold', size=30)],
-    [(sg.Text('Arkivets namn',size=32)), sg.Input(key='arkivetsnamn')],
-    [(sg.Text('Arkivets referenskod',size=32)), sg.Input(key='arkivetsreferenskod')],
-    [(sg.Text('Tidigare referenskod',size=32)),sg.Input(key='tidigarereferenskod')],
-    [(sg.Text('Producerande organisation - Namn',size=32)), sg.Input(key='prodorgnamn')],
-    [(sg.Text('Producerande organisation- IDkod',size=32)),sg.Combo(['VAT', 'DUNS', 'ORG','HSA','Local', 'URI'], default_value='ORG', key='prodorgIDkodtyp'),sg.Input('', key='prodorgIDkod',size=35)],
-    [(sg.Text('Avsändande organisation - Namn',size=32)), sg.Input(key='avsandandeorgnamn')],
-    [(sg.Text('Avsändande organisation - IDkod',size=32)),sg.Combo(['VAT', 'DUNS', 'ORG','HSA','Local', 'URI'], default_value='ORG', key='avsandandeorgIDkodtyp'),sg.Input('', key='avsandandeorgIDkod',size=35)],
-    [(sg.Text('Informationsägande org. - Namn',size=32)), sg.Input(key='infoagarenamn')],
-    [(sg.Text('Informationsägande org. - IDkod',size=32)),sg.Combo(['VAT', 'DUNS', 'ORG','HSA','Local', 'URI'], default_value='ORG', key='infoagareIDkodtyp'),sg.Input('', key='infoagareIDkod',size=35)],
+    [(sg.Text('Arkivets namn',size=32, tooltip=tt['ArkivetsnamnT'])), sg.Input(key='arkivetsnamn', tooltip=tt['Arkivetsnamn'])],
+    [(sg.Text('Arkivets referenskod',size=32, tooltip=tt['ArkivetsreferenskodT'])), sg.Input(key='arkivetsreferenskod',tooltip=tt['Arkivetsreferenskod'])],
+    [(sg.Text('Tidigare referenskod',size=32, tooltip=tt['TidigareReferenskodT'])),sg.Input(key='tidigarereferenskod', tooltip=tt["TidigareReferenskod"])],
+    [(sg.Text('Producerande organisation - Namn',size=32, tooltip=tt['ProducerandeorganisationnamnT'])), sg.Input(key='prodorgnamn', tooltip=tt['Producerandeorganisationnamn'])],
+    [(sg.Text('Producerande organisation- IDkod',size=32, tooltip=tt['ProducerandeorganisationIDkodT'])),sg.Combo(['VAT', 'DUNS', 'ORG','HSA','Local', 'URI'], default_value='ORG', key='prodorgIDkodtyp'),sg.Input('', key='prodorgIDkod',size=35, tooltip=tt['ProducerandeorganisationIDkod'])],
+    [(sg.Text('Avsändande organisation - Namn',size=32, tooltip=tt['AvsandandeorganisationnamnT'])), sg.Input(key='avsandandeorgnamn', tooltip=tt['Avsandandeorganisationnamn'])],
+    [(sg.Text('Avsändande organisation - IDkod',size=32, tooltip=tt['AvsandandeorganisationIDkodT'])),sg.Combo(['VAT', 'DUNS', 'ORG','HSA','Local', 'URI'], default_value='ORG', key='avsandandeorgIDkodtyp'),sg.Input('', key='avsandandeorgIDkod',size=35, tooltip=tt['AvsandandeorganisationIDkod'])],
+    [(sg.Text('Informationsägande org. - Namn',size=32, tooltip=tt['InfoagarenamnT'])), sg.Input(key='infoagarenamn', tooltip=tt['Infoagarenamn'])],
+    [(sg.Text('Informationsägande org. - IDkod',size=32, tooltip=tt['InfoagareIDkodT'])),sg.Combo(['VAT', 'DUNS', 'ORG','HSA','Local', 'URI'], default_value='ORG', key='InfoagareIDkod'),sg.Input('', key='infoagareIDkod',size=35)],
 ]
 
 ovrigt2 = [
     [sg.Text('', font='Consolas 12', size=30)],
-    [(sg.Text('Levererande system - Namn',size=32)), sg.Input(key='levererandesystemnamn')],
-    [(sg.Text('Levererande system - Version',size=32)), sg.Input(key='levererandesystemversion')],
-    [(sg.Text('Konsult - Namn',size=32)), sg.Input(key='konsultnamn')],
-    [(sg.Text('Konsult - Identitetskod',size=32)),sg.Combo(['VAT', 'DUNS', 'ORG','HSA','Local', 'URI'], default_value='ORG', key='konsultIDkodtyp'),sg.Input('', key='konsultIDkod',size=35)],
-    [(sg.Text('Mottagare - Namn',size=32)), sg.Input(key='mottagarenamn')],
-    [(sg.Text('Mottagare - Identitetskod',size=32)),sg.Combo(['VAT', 'DUNS', 'ORG','HSA','Local', 'URI'], default_value='ORG', key='mottagareIDkodtyp'),sg.Input('', key='mottagareIDkod',size=35)],
-    [(sg.Text('Kontaktperson - Namn',size=32)), sg.Input(key='kontaktpersonnamn')],
-    [(sg.Text('Kontaktperson - Kontaktuppgifter',size=32)), sg.Input(key='kontaktuppgifter')],
+    [(sg.Text('Levererande system - Namn',size=32, tooltip=tt['LevererandesystemnamnT'])), sg.Input(key='levererandesystemnamn', tooltip=tt['Levererandesystemnamn'])],
+    [(sg.Text('Levererande system - Version',size=32, tooltip=tt['LevererandesystemversionT'])), sg.Input(key='levererandesystemversion', tooltip=tt['Levererandesystemversion'])],
+    [(sg.Text('Konsult - Namn',size=32, tooltip=tt['KonsultnamnT'])), sg.Input(key='konsultnamn', tooltip=tt['Konsultnamn'])],
+    [(sg.Text('Konsult - Identitetskod',size=32,tooltip=tt['KonsultIDkodT'] )),sg.Combo(['VAT', 'DUNS', 'ORG','HSA','Local', 'URI'], default_value='ORG', key='konsultIDkodtyp'),sg.Input('', key='konsultIDkod',size=35, tooltip=tt['KonsultIDkod'])],
+    [(sg.Text('Mottagare - Namn',size=32, tooltip=tt['MottagarenamnT'])), sg.Input(key='mottagarenamn', tooltip=tt['Mottagarenamn'])],
+    [(sg.Text('Mottagare - Identitetskod',size=32, tooltip=tt['MottagareIDkodT'])),sg.Combo(['VAT', 'DUNS', 'ORG','HSA','Local', 'URI'], default_value='ORG', key='mottagareIDkodtyp'),sg.Input('', key='mottagareIDkod',size=35, tooltip=tt['MottagareIDkod'])],
+    [(sg.Text('Kontaktperson - Namn',size=32, tooltip=tt['KontaktpersonnamnT'])), sg.Input(key='kontaktpersonnamn', tooltip=tt['Kontaktpersonnamn'])],
+    [(sg.Text('Kontaktperson - Kontaktuppgifter',size=32, tooltip=tt['KontaktuppgifterT'])), sg.Input(key='kontaktuppgifter', tooltip=tt['Kontaktuppgifter'])],
 ]
 
 
@@ -112,7 +122,7 @@ layout = [
     ]
 
 # Skapar "menyfönstret"
-window = sg.Window('FGS-Buddy v 0.9.1 - Viktor Lundberg', layout, font='Consolas 10')
+window = sg.Window('FGS-Buddy v 0.9.5 - Viktor Lundberg', layout, font='Consolas 10')
 
 # Variabler för att kontrollera obligatoriska värden samt trigger för att visa/dölja alla element i layouten.
 forcedvaluesdict = {}
@@ -144,7 +154,7 @@ while True:
                 for k, v in forcedvaluesdict.items():
                     # Returnerar de värden som saknas till användaren.
                     if v == '':
-                        print(f'Fältet {k} saknar värde.')
+                        print(f'Fältet "{k}" saknar värde.')
                 
             # Om allt är ok skapa paketet med inkommande parametrar.
             else:
