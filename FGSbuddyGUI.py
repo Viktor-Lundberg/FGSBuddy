@@ -1,5 +1,4 @@
 import os
-import re
 import time
 import PySimpleGUI as sg
 import fgsbuddyfunctions as FGSfunc
@@ -17,8 +16,6 @@ for k, v in tt.items():
     tt[k] = v.replace('\\', '')
 
 
-#print(tt)
-
 # Sätter färgtema
 sg.theme('greenMono') #LightGreen2 DarkBlue3 #reddit greenMono
 
@@ -27,7 +24,7 @@ paketinformation = [
     [sg.Text('Övergripande paketinformation', font='Arial 12 bold',size=30)], 
     [sg.Text('Status*', size=32, tooltip=tt['StatusT']), sg.Combo(['NEW', 'SUPPLEMENT', 'REPLACEMENT','TEST','VERSION', 'OTHER'], default_value='NEW', key='recordstatus', tooltip=tt['Status']) ],
     [sg.Text('Beskrivning', tooltip=tt['BeskrivningT'], size=32),sg.Input(key='beskrivning', tooltip=tt['Beskrivning'])],
-    [sg.Text('Leveransöverenskommelse*', size=32, tooltip=tt['LeveransoverenskommelseT']), sg.Input('Submissionagremmentnernrenre',key='submissionagreement',tooltip=tt['Leveransoverenskommelse'])],
+    [sg.Text('Leveransöverenskommelse*', size=32, tooltip=tt['LeveransoverenskommelseT']), sg.Input(key='submissionagreement',tooltip=tt['Leveransoverenskommelse'])],
     [sg.Text('Tidigare leveransöverenskommelse', size=32, tooltip=tt['TidigareLeveransoverenskommelseT']),sg.Input(key='formersubmissionagreement', tooltip=tt['TidigareLeveransoverenskommelse'])],
     [(sg.Text('Överföring', size=32, tooltip=tt['OverforingT'])), sg.Input(key='overforing', tooltip=tt['Overforing'])],
     [sg.Text('Ordningsnummer inom överföring', size=32, tooltip=tt['OrdningsnummerT']), sg.Input(key='overforingNR',tooltip=tt['Ordningsnummer'])]
@@ -37,20 +34,20 @@ paketinformation = [
 parter = [
     [sg.Text('Arkivbildare', font='Arial 12 bold', size=25)],    
     [sg.Text('Arkivbildare - Namn*', tooltip=tt['ArkivbildarenamnT']) ],
-    [sg.Input('Arkivbildaren',key='arkivbildare', tooltip=tt['Arkivbildarenamn'])],
+    [sg.Input(key='arkivbildare', tooltip=tt['Arkivbildarenamn'])],
     [sg.Text('Arkivbildare - Identitetskod*', tooltip=tt['ArkivbildareIDkodT'])],
-    [sg.Combo(['VAT', 'DUNS', 'ORG','HSA','Local', 'URI'], default_value='ORG', key='IDkodtyp'),sg.Input('koden', key='IDkod',size=35, tooltip=tt['ArkivbildareIDkod'])],
+    [sg.Combo(['VAT', 'DUNS', 'ORG','HSA','Local', 'URI'], default_value='ORG', key='IDkodtyp'),sg.Input(key='IDkod',size=35, tooltip=tt['ArkivbildareIDkod'])],
     [sg.Text('Levererande organisation - Namn*', tooltip=tt['LevererandeorganisationnamnT']) ],
-    [sg.Input('Organisationen',key='levererandeorganisation', tooltip=tt['Levererandeorganisationnamn'])],
+    [sg.Input(key='levererandeorganisation', tooltip=tt['Levererandeorganisationnamn'])],
     [sg.Text('Levererande organisation - Identitetskod', tooltip=tt['LevererandeorganisationIDkodT'])],
-    [sg.Combo(['VAT', 'DUNS', 'ORG','HSA','Local', 'URI'], default_value='ORG', key='IDkodtyplevererandeorganisation'),sg.Input('koden', key='IDkodlevererandeorganisation',size=35, tooltip=tt['LevererandeorganisationIDkod'])],
+    [sg.Combo(['VAT', 'DUNS', 'ORG','HSA','Local', 'URI'], default_value='ORG', key='IDkodtyplevererandeorganisation'),sg.Input(key='IDkodlevererandeorganisation',size=35, tooltip=tt['LevererandeorganisationIDkod'])],
     
     ]
 
 system = [
     [sg.Text('Källsystem', font='Arial 12 bold', size=30)], 
     [sg.Text('Systemnamn*', tooltip=tt['SystemnamnT'])],
-    [sg.Input(default_text ='SYSTEMET', key='system', tooltip=tt['Systemnamn'])],
+    [sg.Input(key='system', tooltip=tt['Systemnamn'])],
     [sg.Text('Systemversion',tooltip=tt['SystemversionT'])],
     [sg.Input(key='systemversion', tooltip=tt['Systemversion'])],
     [sg.Text('Systemtyp', tooltip=tt['SystemtypT'])],
@@ -60,7 +57,7 @@ system = [
 
 innehall = [  
     [sg.Text('Innehåll', font='Arial 12 bold', size=30)],
-    [sg.Text('Sökväg till filer')],
+    [sg.Text('Sökväg till filer som ska ingå i paketet')],
     [sg.Input(default_text=cwd,tooltip="Välj katalog"), sg.FolderBrowse('Välj katalog',key="folder", initial_folder=os.path.join(cwd))],
     [sg.Text('Inkludera undermappar')],
     [sg.Radio('Ja', 'subfolders', default=False, key='subfolderstrue'), sg.Radio('Nej', 'subfolders', default=True, key='subfoldersfalse')],
@@ -122,7 +119,7 @@ layout = [
     ]
 
 # Skapar "menyfönstret"
-window = sg.Window('FGS-Buddy v 0.9.5 - Viktor Lundberg', layout, font='Consolas 10')
+window = sg.Window('FGS-Buddy v 1.0 - Viktor Lundberg', layout, font='Consolas 10', icon="Buddy.ico")
 
 # Variabler för att kontrollera obligatoriska värden samt trigger för att visa/dölja alla element i layouten.
 forcedvaluesdict = {}

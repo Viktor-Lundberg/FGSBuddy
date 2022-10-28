@@ -238,19 +238,17 @@ class FgsMaker:
         # Samlar metadata om filerna och lägger till i dicten. (Track används för att skapa "Progressbar")
         for  k, v in filedict.items():
             # Samlar metadata
-            #print(f'Genererar metadata för {k}')
             filePathFromDict = filedict[k]['path']
             fileSize = str(os.stat(filePathFromDict).st_size)
             createdDate = datetime.datetime.utcfromtimestamp(os.stat(filePathFromDict).st_mtime).strftime('%Y-%m-%dT%H:%M:%S')
             hashValue = self.hashfunction(filePathFromDict)
             mimeType = mimetypes.guess_type(filePathFromDict)[0]
             originalFileName = filedict[k]['fileName']
-            fgsFileName = str(originalFileName).lower().replace('å', 'a').replace('ä','a').replace('ö','o').replace(' ','_')
+            fgsFileName = str(originalFileName).replace('å', 'a').replace('ä','a').replace('ö','o').replace(' ','_').replace('Å','A').replace('Ä','A').replace('Ö','O')
             
             # Tar fram den relativa sökvägen genom att ta hela filsökvägen - {directory} för att använda till att skapa fileLink.
             # C:\mappen\undermapp1\undermapp2\Engöttigfil.txt --> undermapp1/undermapp2
             # file:///Content/undermapp1/undermapp2/engottigfil.txt'
-            #relativeFilePath = filePathFromDict.replace(directory,'').replace(k,'').replace('\\','/')
             relativeFilePath = filePathFromDict.replace(directory,'').replace(originalFileName,'').replace('\\','/')
             fileLink = f'file:///Content{relativeFilePath}{fgsFileName}'
 
@@ -275,13 +273,11 @@ class FgsMaker:
             hashValue = self.hashfunction(metadatafilepath)
             mimeType = mimetypes.guess_type(metadatafilepath)[0]
             originalFileName = os.path.basename(metadatafilepath)
-            #Ta bort lower om man vill att det ska fungera med filer som heter samma sak fast med stora/respektive små bokstäver......
-            fgsFileName = str(originalFileName).lower().replace('å', 'a').replace('ä','a').replace('ö','o').replace(' ','_')
+            fgsFileName = str(originalFileName).replace('å', 'a').replace('ä','a').replace('ö','o').replace(' ','_').replace('Å','A').replace('Ä','A').replace('Ö','O')
             
             # Tar fram den relativa sökvägen genom att ta hela filsökvägen - {directory} för att använda till att skapa fileLink.
             # C:\mappen\undermapp1\undermapp2\Engöttigfil.txt --> undermapp1/undermapp2
             # file:///Content/undermapp1/undermapp2/engottigfil.txt'
-            #relativeFilePath = metadatafilepath.replace(directory,'').replace(originalFileName,'').replace('\\','/')
             relativeFilePath = '/'
             
             fileLink = f'file:///Metadata/{fgsFileName}'
@@ -309,13 +305,11 @@ class FgsMaker:
             hashValue = self.hashfunction(metadatafilepath)
             mimeType = mimetypes.guess_type(metadatafilepath)[0]
             originalFileName = os.path.basename(metadatafilepath)
-            #Ta bort lower om man vill att det ska fungera med filer som heter samma sak fast med stora/respektive små bokstäver......
-            fgsFileName = str(originalFileName).lower().replace('å', 'a').replace('ä','a').replace('ö','o').replace(' ','_')
+            fgsFileName = str(originalFileName).replace('å', 'a').replace('ä','a').replace('ö','o').replace(' ','_').replace('Å','A').replace('Ä','A').replace('Ö','O')
             
             # Tar fram den relativa sökvägen genom att ta hela filsökvägen - {directory} för att använda till att skapa fileLink.
             # C:\mappen\undermapp1\undermapp2\Engöttigfil.txt --> undermapp1/undermapp2
             # file:///Content/undermapp1/undermapp2/engottigfil.txt'
-            #relativeFilePath = metadatafilepath.replace(directory,'').replace(originalFileName,'').replace('\\','/')
             relativeFilePath = '/'
             
             fileLink = f'file:///System/{fgsFileName}'
@@ -378,7 +372,6 @@ class FgsMaker:
                 shutil.copy2(filedict[k]['path'], schemaPath)       
             else:
                 # Tar fram den relativa sökvägen till filen genom att lägga ihop cwd + relativ path. Skapar katalog i FGSpackage om den inte finns.
-                #print(f'Lägger till {k} i FGS-paketet')
                 relativePackagePath = path + filedict[k]['relativefilepath']
                 relativePackagePath = os.path.join(relativePackagePath)
                 os.makedirs(os.path.dirname(relativePackagePath), exist_ok=True)
@@ -396,19 +389,9 @@ class FgsMaker:
 
         # Skapar zippen
         packageTime = datetime.datetime.now().strftime('%Y_%m_%dT%H_%M_%S')
-        #shutil.make_archive(f'FGS_Package_{packageTime}','zip', parentDir)
         shutil.make_archive(f'{self.GUIvalues["arkivbildare"]}_{self.GUIvalues["system"]}_{packageTime}','zip', parentDir)
         # Tar bort katalogen FGSpackage efter att den zippats.
         shutil.rmtree(parentDir)
         self.output = ''
         self.output = f'FGS-paketet "{self.GUIvalues["arkivbildare"]}_{self.GUIvalues["system"]}_{packageTime}.zip" genererades i katalogen {cwd}'     
              
-
-'''
-# Startar Skriptet
-fgsPackage = FgsMaker()
-fgsPackage.inputValues(debug=True)
-fgsPackage.collectFiles(fgsPackage.pathToFiles, fgsPackage.subfolders, False)
-fgsPackage.createSip()
-fgsPackage.createFgsPackage(cwd)
-'''
