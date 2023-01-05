@@ -340,7 +340,7 @@ class FgsMaker:
         f.close
         return hashValue
     
-    def createFgsPackage(self, directory):
+    def createFgsPackage(self, directory, outputfolder):
         # Skapar paths och mappar för att kunna bygga FGS-paketet.
         directoryName = 'FGSpackage'
         parentDir = os.path.join(directory, directoryName)
@@ -384,14 +384,21 @@ class FgsMaker:
                 try:
                    os.rename(newPath, fgsPath)
                 except Exception as e:
-                   print(e)
-                
+                   print(e)            
 
+        
         # Skapar zippen
         packageTime = datetime.datetime.now().strftime('%Y_%m_%dT%H_%M_%S')
-        shutil.make_archive(f'{self.GUIvalues["arkivbildare"]}_{self.GUIvalues["system"]}_{packageTime}','zip', parentDir)
+        destinationFolder = os.path.join(outputfolder, f'{self.GUIvalues["arkivbildare"]}_{self.GUIvalues["system"]}_{packageTime}')
+        FGSName = f'{self.GUIvalues["arkivbildare"]}_{self.GUIvalues["system"]}_{packageTime}'
+        try:
+            shutil.make_archive(destinationFolder,'zip', parentDir)
+        except:
+            shutil.make_archive(FGSName,'zip', parentDir)
+            outputfolder = cwd
+       
         # Tar bort katalogen FGSpackage efter att den zippats.
         shutil.rmtree(parentDir)
         self.output = ''
-        self.output = f'FGS-paketet "{self.GUIvalues["arkivbildare"]}_{self.GUIvalues["system"]}_{packageTime}.zip" genererades i katalogen {cwd}'     
+        self.output = f'FGS-paketet "{self.GUIvalues["arkivbildare"]}_{self.GUIvalues["system"]}_{packageTime}.zip" genererades i katalogen {outputfolder}'     
              

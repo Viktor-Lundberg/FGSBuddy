@@ -92,7 +92,7 @@ ovrigt = [
     [(sg.Text('Avsändande organisation - Namn',size=32, tooltip=tt['AvsandandeorganisationnamnT'])), sg.Input(key='avsandandeorgnamn', tooltip=tt['Avsandandeorganisationnamn'])],
     [(sg.Text('Avsändande organisation - IDkod',size=32, tooltip=tt['AvsandandeorganisationIDkodT'])),sg.Combo(['VAT', 'DUNS', 'ORG','HSA','Local', 'URI'], default_value='ORG', key='avsandandeorgIDkodtyp'),sg.Input('', key='avsandandeorgIDkod',size=35, tooltip=tt['AvsandandeorganisationIDkod'])],
     [(sg.Text('Informationsägande org. - Namn',size=32, tooltip=tt['InfoagarenamnT'])), sg.Input(key='infoagarenamn', tooltip=tt['Infoagarenamn'])],
-    [(sg.Text('Informationsägande org. - IDkod',size=32, tooltip=tt['InfoagareIDkodT'])),sg.Combo(['VAT', 'DUNS', 'ORG','HSA','Local', 'URI'], default_value='ORG', key='InfoagareIDkod'),sg.Input('', key='infoagareIDkod',size=35)],
+    [(sg.Text('Informationsägande org. - IDkod',size=32, tooltip=tt['InfoagareIDkodT'])),sg.Combo(['VAT', 'DUNS', 'ORG','HSA','Local', 'URI'], default_value='ORG', key='infoagareIDkodtyp'),sg.Input('', key='infoagareIDkod',size=35)],
 ]
 
 ovrigt2 = [
@@ -114,12 +114,13 @@ layout = [
     [sg.Column(space)],
     [sg.Column(parter, vertical_alignment='top'), sg.Column(system, vertical_alignment='top'), sg.Column(innehall, vertical_alignment='top')],
     [sg.pin(sg.Column(ovrigt, key='non2', visible=False)), sg.Column(ovrigt2, key='non3', visible=False, vertical_alignment='top')],
-    [sg.Submit('Skapa paket', key='createSIP', size=15), sg.Button('Visa alla fält', key='fields', size=15)],
-    [sg.Output(size=(165,5), key='output', pad=0)]
+    [sg.Text('')],
+    [sg.Output(size=(165,5), key='output', pad=0, background_color=	'#ebe0e0')],
+    [sg.Text('Outputkatalog'),sg.Input(default_text=cwd,tooltip="Välj katalog", size=65), sg.FolderBrowse('Välj katalog',key="outputfolder", initial_folder=os.path.join(cwd)),sg.Submit('Skapa paket', key='createSIP', size=15), sg.Button('Visa alla fält', key='fields', size=15)],
     ]
 
 # Skapar "menyfönstret"
-window = sg.Window('FGS-Buddy v 1.0 - Viktor Lundberg', layout, font='Consolas 10', icon="Buddy.ico")
+window = sg.Window('FGS-Buddy v 1.1 - Viktor Lundberg', layout, font='Consolas 10', icon="Buddy.ico")
 
 # Variabler för att kontrollera obligatoriska värden samt trigger för att visa/dölja alla element i layouten.
 forcedvaluesdict = {}
@@ -162,6 +163,10 @@ while True:
                     folder = os.path.join(cwd)
                 else:
                     folder = os.path.join(values['folder'])
+                if values['outputfolder'] == '':
+                    outputfolder = os.path.join(cwd)
+                else:
+                    outputfolder = os.path.join(values['outputfolder'])
                 if values['subfolderstrue']:
                     subfolders = True
                 if values['metadatafile'] != '':
@@ -170,7 +175,7 @@ while True:
                     schemafile = values['schemafile']
                 fgsPackage.collectFiles(folder, subfolders, metadatafile, schemafile)
                 fgsPackage.createSip()
-                fgsPackage.createFgsPackage(cwd)
+                fgsPackage.createFgsPackage(cwd,outputfolder)
                 time.sleep(0.3)
                 window.FindElement('output').update('')
                 window.refresh()
