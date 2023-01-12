@@ -47,7 +47,7 @@ class FgsMaker:
         if self.GUIvalues['arkivetsnamn'] != '':
             rotelement.set(str(QName(ns.get('ext'),'ARCHIVALNAME')),self.GUIvalues['arkivetsnamn'])
         rotelement.set(str(QName(ns.get('ext'),'APPRAISAL')),self.GUIvalues['gallring'])
-        if self.GUIvalues['sekretess'] != 'Ej angett':
+        if self.GUIvalues['sekretess'] != 'Not specified':
             rotelement.set(str(QName(ns.get('ext'),'ACCESSRESTRICT')),self.GUIvalues['sekretess'])
         if self.GUIvalues['startdatum'] != '':
             rotelement.set(str(QName(ns.get('ext'),'STARTDATE')),self.GUIvalues['startdatum'])
@@ -60,7 +60,8 @@ class FgsMaker:
         metsHdr = etree.SubElement(rotelement, str(QName(ns.get('mets'),'metsHdr')))
         metsHdr.set('CREATEDATE', datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'))
         metsHdr.set(str(QName(ns.get('ext'),'OAISSTATUS')),'SIP')
-        metsHdr.set('RECORDSTATUS', self.GUIvalues['recordstatus'])                                                     
+        metsHdr.set('RECORDSTATUS', self.GUIvalues['recordstatus'])
+        metsHdr.set(str(QName(ns.get('ext'),'AGREEMENTFORM')), self.GUIvalues['avtalsform'])                                                     
         
         # Skapar agents
         # Arkivbildare

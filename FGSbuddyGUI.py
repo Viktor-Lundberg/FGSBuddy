@@ -3,6 +3,7 @@ import time
 import PySimpleGUI as sg
 import fgsbuddyfunctions as FGSfunc
 import json
+import webbrowser
 
 
 # Current working directory
@@ -20,9 +21,10 @@ for k, v in tt.items():
 sg.theme('greenMono') #LightGreen2 DarkBlue3 #reddit greenMono
 
 # Listor med element som utgör olika delar av layouten. 
+
 paketinformation = [
     [sg.Text('Övergripande paketinformation', font='Arial 12 bold',size=30)], 
-    [sg.Text('Status*', size=32, tooltip=tt['StatusT']), sg.Combo(['NEW', 'SUPPLEMENT', 'REPLACEMENT','TEST','VERSION', 'OTHER'], default_value='NEW', key='recordstatus', tooltip=tt['Status']) ],
+    [sg.Text('Status*', size=32, tooltip=tt['StatusT']), sg.Combo(['NEW', 'SUPPLEMENT', 'REPLACEMENT','TEST','VERSION', 'OTHER'], default_value='NEW', key='recordstatus', tooltip=tt['Status'], size=43) ],
     [sg.Text('Beskrivning', tooltip=tt['BeskrivningT'], size=32),sg.Input(key='beskrivning', tooltip=tt['Beskrivning'])],
     [sg.Text('Leveransöverenskommelse*', size=32, tooltip=tt['LeveransoverenskommelseT']), sg.Input(key='submissionagreement',tooltip=tt['Leveransoverenskommelse'])],
     [sg.Text('Tidigare leveransöverenskommelse', size=32, tooltip=tt['TidigareLeveransoverenskommelseT']),sg.Input(key='formersubmissionagreement', tooltip=tt['TidigareLeveransoverenskommelse'])],
@@ -70,12 +72,12 @@ innehall = [
 
 information = [
     [sg.Text('Information', font='Arial 12 bold', size=30)],
-    [sg.Text('Informationstyp*', size=32, tooltip=tt['InformationstypT']), sg.Combo(['ERMS','Personnel','Medical record','Economics','Databases','Webpages', 'GIS', 'No specification', 'AIC', 'Archival information','Unstructured', 'Single records', 'Publication'], default_value='ERMS', key='informationstyp', tooltip=tt['Informationstyp'])],
+    [sg.Text('Informationstyp*', size=32, tooltip=tt['InformationstypT']), sg.Combo(['ERMS','Personnel','Medical record','Economics','Databases','Webpages', 'GIS', 'No specification', 'AIC', 'Archival information','Unstructured', 'Single records', 'Publication'], default_value='ERMS', key='informationstyp', tooltip=tt['Informationstyp'], size=43)],
     [sg.Text('Informationstypsspecifikation', size=32, tooltip=tt['InformationstypsspecifikationT']),sg.Input(key='informationstypsspecifikation', tooltip=tt['Informationstypsspecifikation'])],
     [sg.Text('Tidsomfång', size=32), sg.CalendarButton('Startdatum', target='startdatum', format='%Y-%m-%d',no_titlebar=False, tooltip=tt['StartdatumT']), sg.Input(key='startdatum', size=(10,1), tooltip=tt['Startdatum']), sg.Text('-'), sg.Input(key='slutdatum', size=(10,1), tooltip=tt['Slutdatum']),sg.CalendarButton('Slutdatum', target='slutdatum', format='%Y-%m-%d',no_titlebar=False, tooltip=tt['SlutdatumT'])],
     [sg.Text('Informationsklass', size=32, tooltip=tt['InformationsklassT']), sg.Input(key='informationsklass', tooltip=tt['Informationsklass'])],
-    [sg.Text('Sekretess', size=32, tooltip=tt['SekretessT']), sg.Combo(['Secrecy', 'PuL', 'Secrecy and PuL','GDPR','Ej angett'], default_value='Ej angett', key='sekretess', tooltip=tt['Sekretess'])],
-    [sg.Text('Gallring', size=32, tooltip=tt['GallringT']),sg.Combo(['Yes', 'No'], default_value='No', key='gallring', tooltip=tt['Gallring']) ],
+    [sg.Text('Sekretess', size=32, tooltip=tt['SekretessT']), sg.Combo(['Secrecy', 'PuL', 'Secrecy and PuL','GDPR','Not specified'], default_value='Not specified', key='sekretess', tooltip=tt['Sekretess'], size=43)],
+    [sg.Text('Gallring', size=32, tooltip=tt['GallringT']),sg.Combo(['Yes', 'No'], default_value='No', key='gallring', tooltip=tt['Gallring'], size=43) ],
 ]
 
 space = [
@@ -105,26 +107,37 @@ ovrigt2 = [
     [(sg.Text('Mottagare - Identitetskod',size=32, tooltip=tt['MottagareIDkodT'])),sg.Combo(['VAT', 'DUNS', 'ORG','HSA','Local', 'URI'], default_value='ORG', key='mottagareIDkodtyp'),sg.Input('', key='mottagareIDkod',size=35, tooltip=tt['MottagareIDkod'])],
     [(sg.Text('Kontaktperson - Namn',size=32, tooltip=tt['KontaktpersonnamnT'])), sg.Input(key='kontaktpersonnamn', tooltip=tt['Kontaktpersonnamn'])],
     [(sg.Text('Kontaktperson - Kontaktuppgifter',size=32, tooltip=tt['KontaktuppgifterT'])), sg.Input(key='kontaktuppgifter', tooltip=tt['Kontaktuppgifter'])],
+    [sg.Text('Avtalsform', size=32, tooltip=tt['AvtalsformT']), sg.Combo(['AGREEMENT', 'DEPOSIT', 'GIFT','Not specified'], default_value='Not specified', key='avtalsform', tooltip=tt['Avtalsform'], size=43)],
+
 ]
 
+# Menyraden
+meny = [
+    ['Dokumentation', ['FGS-Paketstruktur v 1.2','Schema v 1.2']],['Om', ['task']]
+     ]
 
 # GUI layout
 layout = [
+    [sg.Titlebar('FGS-Buddy v 1.1 - Viktor Lundberg', font='Consolas 10', background_color='Black')],
+    [sg.MenubarCustom(meny)],
     [sg.Column(paketinformation, vertical_alignment='top'), sg.Column(information)],
     [sg.Column(space)],
     [sg.Column(parter, vertical_alignment='top'), sg.Column(system, vertical_alignment='top'), sg.Column(innehall, vertical_alignment='top')],
     [sg.pin(sg.Column(ovrigt, key='non2', visible=False)), sg.Column(ovrigt2, key='non3', visible=False, vertical_alignment='top')],
     [sg.Text('')],
-    [sg.Output(size=(165,5), key='output', pad=0, background_color=	'#ebe0e0')],
-    [sg.Text('Outputkatalog'),sg.Input(default_text=cwd,tooltip="Välj katalog", size=65), sg.FolderBrowse('Välj katalog',key="outputfolder", initial_folder=os.path.join(cwd)),sg.Submit('Skapa paket', key='createSIP', size=15), sg.Button('Visa alla fält', key='fields', size=15)],
+    [sg.Output(size=(165,5), key='output', pad=5, background_color=	'pink', echo_stdout_stderr=True)],
+    [sg.Text('Outputkatalog'),sg.Input(default_text=cwd,tooltip="Välj katalog", size=65), sg.FolderBrowse('Välj katalog',key="outputfolder", initial_folder=os.path.join(cwd)),sg.Submit('Skapa paket', key='createSIP', size=15, button_color='black on pink'),sg.Text('', size=30), sg.Button('Visa alla fält', key='fields', size=15, button_color='black on pink')],
     ]
 
 # Skapar "menyfönstret"
-window = sg.Window('FGS-Buddy v 1.1 - Viktor Lundberg', layout, font='Consolas 10', icon="Buddy.ico")
+window = sg.Window('FGS-Buddy v 1.1',layout, font='Consolas 10', icon="Buddy.ico", keep_on_top=True, no_titlebar=True) 
+#window = sg.Window(layout, font='Consolas 10', icon="Buddy.ico", use_custom_titlebar=True)
 
 # Variabler för att kontrollera obligatoriska värden samt trigger för att visa/dölja alla element i layouten.
 forcedvaluesdict = {}
 allvalues = False
+
+
 
 # Program-Loop
 while True:
@@ -132,9 +145,13 @@ while True:
     match event:
         case sg.WIN_CLOSED:
             break
+
+        case 'FGS-Paketstruktur v 1.2':
+            webbrowser.open('https://riksarkivet.se/Media/pdf-filer/doi-t/FGS_Paketstruktur_RAFGS1V1_2.pdf')
+
         # Startar processen för att skapa FGS-paket om användaren trycker på "skapa paket"-knappen
         case 'createSIP':
-            window.FindElement('output').Update('')
+            window.find_element('output').Update('')
             window.refresh()
             metadatafile = False
             schemafile = False
@@ -177,7 +194,7 @@ while True:
                 fgsPackage.createSip()
                 fgsPackage.createFgsPackage(cwd,outputfolder)
                 time.sleep(0.3)
-                window.FindElement('output').update('')
+                window.find_element('output').update('')
                 window.refresh()
                 print(fgsPackage.output)
         

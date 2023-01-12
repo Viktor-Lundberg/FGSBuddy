@@ -74,5 +74,7 @@
 "MottagarenamnT":"<mets><metsHdr><agent ROLE=”PRESERVATION” TYPE= ”ORGANIZATION”> <name>[Mottagare Namn]",
 "Mottagarenamn":"Namn på den organisation som administrerar e-arkivet.\\\n Det kan vara en avdelning inom den egna organisationen eller en extern tillhandahållare av e-arkiv som tjänst.\\\n Informationen behövs för att verifiera att en SIP levererats till rätt adressat.",
 "MottagareIDkodT":"<mets><metsHdr><agent ROLE=”PRESERVATION” TYPE= ”ORGANIZATION”> <note>[Mottagare Identitetskod] ",
-"MottagareIDkod":"Identifiering med unik identitetskod för mottagare."
+"MottagareIDkod":"Identifiering med unik identitetskod för mottagare.",
+"AvtalsformT":"<mets><metsHdr ext:AGREEMENTFORM=”[Avtalsform]”",
+"Avtalsform":"Typ av avtal för en överföring"
 }
