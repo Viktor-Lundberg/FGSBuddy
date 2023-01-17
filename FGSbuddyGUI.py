@@ -5,9 +5,61 @@ import fgsbuddyfunctions as FGSfunc
 import json
 import webbrowser
 
+# Funktion för att rensa alla input-fält
+def clearinput():
+    saveinput = ['folderinput', 'outputfolderinput']
+    # Går igenom key_dict och kontrollerar vad det är för sg objekt
+    for k, v in window.key_dict.items():
+        # Om fältet är ett inputfält och keyn inte finns med i listan över värden som inte ska ändras --> Rensa 
+        if isinstance(v, sg.Input) and k not in saveinput:
+            v.update('')
+        # Sätter alla combofält till defaultvärdet
+        elif isinstance(v, sg.Combo):
+            v.update(v.DefaultValue)
+        # Ändrar till defaultvärdet i radioknapparna kring om paketet ska innehålla "undermappar"
+        elif isinstance(v, sg.Radio) and k == 'subfoldersfalse':
+            v.update(True)
+        else:
+            continue
+    window.refresh()
 
+
+# Funktion för att skapa popup-fönstret "Om FGS-Buddy"
+def buddywindow():
+    # Hämtar alla releasenotes från txt-fil och lägger i variabeln releasenotes
+    with open('releasenotes.txt', encoding='utf-8') as releasenotesdoc:
+        releasenotes = releasenotesdoc.read()
+
+    # Layout för fönstret
+    aboutlayout = [
+        [sg.Text('FGS-Buddy', font='Arial 12 bold', size=30)],
+        [sg.Text(f'Version: {version}\nSkapad av: Viktor Lundberg\nLicens: Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)', font='Consolas 10')],
+        [sg.Text('FGS-Buddy på github',font='Consolas 10 underline', text_color='blue', enable_events=True, key='githublink')],
+        [sg.Text('', font='Arial 12 bold', size=30)],
+        [sg.Text('Release notes', font='Arial 10 bold', size=30)],
+        [sg.Text(releasenotes, font='Consolas 8')],
+        [sg.Button('Ok', key='Exit', size=7)]
+    ]
+
+    # Skapar nya fönstret
+    about = sg.Window('Om FGS-Buddy', aboutlayout, icon="Buddy.ico")
+    
+    # Programloop för "Om FGS-Buddy"-fönstret.
+    while True:
+        event, values = about.read()
+        if event == "Exit" or event == sg.WIN_CLOSED:
+            about.close()
+            releasenotesdoc.close()
+            break
+        if event == 'githublink':
+            webbrowser.open('https://github.com/Viktor-Lundberg/FGSBuddy')
+
+
+# Nuvarande version
+version = '1.1.0'
 # Current working directory
 cwd = os.getcwd()
+
 
 # Laddar tooltipsfil
 tooltipsfile = open('tooltips.json', encoding='utf-8')
@@ -60,13 +112,13 @@ system = [
 innehall = [  
     [sg.Text('Innehåll', font='Arial 12 bold', size=30)],
     [sg.Text('Sökväg till filer som ska ingå i paketet')],
-    [sg.Input(default_text=cwd,tooltip="Välj katalog"), sg.FolderBrowse('Välj katalog',key="folder", initial_folder=os.path.join(cwd))],
+    [sg.Input(default_text=cwd,tooltip="Välj katalog", key='folderinput'), sg.FolderBrowse('Välj katalog',key="folder", initial_folder=os.path.join(cwd))],
     [sg.Text('Inkludera undermappar')],
     [sg.Radio('Ja', 'subfolders', default=False, key='subfolderstrue'), sg.Radio('Nej', 'subfolders', default=True, key='subfoldersfalse')],
     [sg.Text('Sökväg till metadatafil')],
-    [sg.Input(tooltip="Välj metadatafil"), sg.FileBrowse('Välj fil',key="metadatafile", initial_folder=os.path.join(cwd))],
+    [sg.Input(tooltip="Välj metadatafil", key='metadatafile'), sg.FileBrowse('Välj fil',key="metadatafileB", initial_folder=os.path.join(cwd))],
     [sg.Text('Sökväg till schemafil')],
-    [sg.Input(tooltip="Välj schemafil"), sg.FileBrowse('Välj fil', key="schemafile", initial_folder=os.path.join(cwd))],
+    [sg.Input(tooltip="Välj schemafil", key='schemafile'), sg.FileBrowse('Välj fil', key="schemafileB", initial_folder=os.path.join(cwd) )],
 
     ]
 
@@ -74,7 +126,7 @@ information = [
     [sg.Text('Information', font='Arial 12 bold', size=30)],
     [sg.Text('Informationstyp*', size=32, tooltip=tt['InformationstypT']), sg.Combo(['ERMS','Personnel','Medical record','Economics','Databases','Webpages', 'GIS', 'No specification', 'AIC', 'Archival information','Unstructured', 'Single records', 'Publication'], default_value='ERMS', key='informationstyp', tooltip=tt['Informationstyp'], size=43)],
     [sg.Text('Informationstypsspecifikation', size=32, tooltip=tt['InformationstypsspecifikationT']),sg.Input(key='informationstypsspecifikation', tooltip=tt['Informationstypsspecifikation'])],
-    [sg.Text('Tidsomfång', size=32), sg.CalendarButton('Startdatum', target='startdatum', format='%Y-%m-%d',no_titlebar=False, tooltip=tt['StartdatumT']), sg.Input(key='startdatum', size=(10,1), tooltip=tt['Startdatum']), sg.Text('-'), sg.Input(key='slutdatum', size=(10,1), tooltip=tt['Slutdatum']),sg.CalendarButton('Slutdatum', target='slutdatum', format='%Y-%m-%d',no_titlebar=False, tooltip=tt['SlutdatumT'])],
+    [sg.Text('Tidsomfång', size=32), sg.CalendarButton('Startdatum', target='startdatum', format='%Y-%m-%d', tooltip=tt['StartdatumT']), sg.Input(key='startdatum', size=(10,1), tooltip=tt['Startdatum']), sg.Text('-'), sg.Input(key='slutdatum', size=(10,1), tooltip=tt['Slutdatum']),sg.CalendarButton('Slutdatum', target='slutdatum', format='%Y-%m-%d', tooltip=tt['SlutdatumT'])],
     [sg.Text('Informationsklass', size=32, tooltip=tt['InformationsklassT']), sg.Input(key='informationsklass', tooltip=tt['Informationsklass'])],
     [sg.Text('Sekretess', size=32, tooltip=tt['SekretessT']), sg.Combo(['Secrecy', 'PuL', 'Secrecy and PuL','GDPR','Not specified'], default_value='Not specified', key='sekretess', tooltip=tt['Sekretess'], size=43)],
     [sg.Text('Gallring', size=32, tooltip=tt['GallringT']),sg.Combo(['Yes', 'No'], default_value='No', key='gallring', tooltip=tt['Gallring'], size=43) ],
@@ -113,30 +165,34 @@ ovrigt2 = [
 
 # Menyraden
 meny = [
-    ['Dokumentation', ['FGS-Paketstruktur v 1.2','Schema v 1.2']],['Om', ['task']]
+    ['FGS-dokumentation', ['FGS-Paketstruktur v 1.2','FGS-Paketstruktur v 1.2 - tillägg','Schema v 1.2']],['Hjälp', ['Om FGS-Buddy']]
      ]
 
 # GUI layout
 layout = [
-    [sg.Titlebar('FGS-Buddy v 1.1 - Viktor Lundberg', font='Consolas 10', background_color='Black')],
-    [sg.MenubarCustom(meny)],
+    # OBS! Pysimplegui har problem med custom menubar (om det används syns inte applikationen i verktygsfältet, använd classic tills fix...)
+    #[sg.Titlebar('FGS-Buddy v 1.1 - Viktor Lundberg', font='Consolas 10', background_color='Black')],
+    #[sg.MenubarCustom(meny, bar_background_color='Pink', bar_text_color='Black')],
+    
+    [sg.MenuBar(meny, background_color='Pink')],
     [sg.Column(paketinformation, vertical_alignment='top'), sg.Column(information)],
     [sg.Column(space)],
     [sg.Column(parter, vertical_alignment='top'), sg.Column(system, vertical_alignment='top'), sg.Column(innehall, vertical_alignment='top')],
-    [sg.pin(sg.Column(ovrigt, key='non2', visible=False)), sg.Column(ovrigt2, key='non3', visible=False, vertical_alignment='top')],
+    [sg.pin(sg.Column(ovrigt, key='invisible', visible=False)), sg.Column(ovrigt2, key='invisible2', visible=False, vertical_alignment='top')],
     [sg.Text('')],
     [sg.Output(size=(165,5), key='output', pad=5, background_color=	'pink', echo_stdout_stderr=True)],
-    [sg.Text('Outputkatalog'),sg.Input(default_text=cwd,tooltip="Välj katalog", size=65), sg.FolderBrowse('Välj katalog',key="outputfolder", initial_folder=os.path.join(cwd)),sg.Submit('Skapa paket', key='createSIP', size=15, button_color='black on pink'),sg.Text('', size=30), sg.Button('Visa alla fält', key='fields', size=15, button_color='black on pink')],
+    [sg.Text('Outputkatalog'),sg.Input(default_text=cwd, tooltip="Välj katalog", size=65, key='outputfolderinput'), sg.FolderBrowse('Välj katalog',key="outputfolder", initial_folder=os.path.join(cwd)),sg.Submit('Skapa paket', key='createSIP', size=15,button_color='black on pink'),sg.Text('', size=15), sg.Button('Rensa', key='clear', size=15),sg.Button('Visa alla fält', key='fields', size=15)],
     ]
 
-# Skapar "menyfönstret"
-window = sg.Window('FGS-Buddy v 1.1',layout, font='Consolas 10', icon="Buddy.ico", keep_on_top=True, no_titlebar=True) 
-#window = sg.Window(layout, font='Consolas 10', icon="Buddy.ico", use_custom_titlebar=True)
+
+
+# Skapar "huvudfönstret"
+window = sg.Window(f'FGS-Buddy v {version}',layout, font='Consolas 10', icon="Buddy.ico", resizable=True, titlebar_background_color='green') 
+
 
 # Variabler för att kontrollera obligatoriska värden samt trigger för att visa/dölja alla element i layouten.
 forcedvaluesdict = {}
 allvalues = False
-
 
 
 # Program-Loop
@@ -145,9 +201,6 @@ while True:
     match event:
         case sg.WIN_CLOSED:
             break
-
-        case 'FGS-Paketstruktur v 1.2':
-            webbrowser.open('https://riksarkivet.se/Media/pdf-filer/doi-t/FGS_Paketstruktur_RAFGS1V1_2.pdf')
 
         # Startar processen för att skapa FGS-paket om användaren trycker på "skapa paket"-knappen
         case 'createSIP':
@@ -201,16 +254,31 @@ while True:
         # Visar eller döljer layout om användaren trycker på knappen
         case 'fields':
             if allvalues == False:
-                window['non2'].Update(visible=True)
-                window['non3'].Update(visible=True)
+                window['invisible'].Update(visible=True)
+                window['invisible2'].Update(visible=True)
                 window.refresh()
                 window['fields'].Update('Dölj fält')
                 allvalues = True
             else:
-                window['non2'].Update(visible=False)
-                window['non3'].Update(visible=False)
+                window['invisible'].Update(visible=False)
+                window['invisible2'].Update(visible=False)
                 window.refresh()
                 window['fields'].Update('Visa alla fält')
                 allvalues = False
-
-            
+        
+        case 'clear':
+            clearinput()
+        
+        # Meny - FGS-dokumentation
+        case 'FGS-Paketstruktur v 1.2':
+            webbrowser.open('https://riksarkivet.se/Media/pdf-filer/doi-t/FGS_Paketstruktur_RAFGS1V1_2.pdf')
+        case 'FGS-Paketstruktur v 1.2 - tillägg':
+            webbrowser.open('https://riksarkivet.se/Media/pdf-filer/doi-t/FGS_Paketstruktur_Tillagg_RAFGS1V1_2A20171025.pdf')
+        case 'Schema v 1.2':
+            webbrowser.open('http://xml.ra.se/e-arkiv/METS/CSPackageMETS.xsd')
+        
+        # Meny - Hjälp
+        case 'Om FGS-Buddy':
+            sg.Window.disappear(window)
+            buddywindow()
+            sg.Window.reappear(window)

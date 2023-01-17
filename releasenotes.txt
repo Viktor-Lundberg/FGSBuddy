@@ -1,0 +1,5 @@
+Version 1.1* Möjlighet att välja outputkatalog för SIP-paketet.* Meny som ger direktåtkomst till FGS-dokumentationen.* Möjlighet att kunna ange metadata om "Avtalsform" för SIP-paketet.* Avsnittet "Om FGS-Buddy" med bland annat release notes.* Funktionalitet att köra applikationen i helskärmsläge/valfri storlek.* Fixat bugg där applikationen kraschade när man fyllde i "informationsägare".* Knapp för att enkelt rensa alla värden.* Förbättringar i gränssnittet.Version 1.0* Följer Riksarkivets standard FGS-paketstruktur version 1.2.* Kan hantera innehåll (content) som är lagrat i undermappar i flera nivåer.* Genererar checksummor, identifierar MIME-typer, filstorlekar och tidpunkt för skapande för de filer som ingår i SIP-paketet.
+* Ger filerna korrekta filnamn enligt FGS-standarden samtidigt som originalnamnet bevaras som metadata.
+* Ger möjlighet att lägga till schemafil och metadatafil i paketet.
+* Innnehåller tooltips med besrivande hjälptexter hämtade från standarden för alla fält + hänvisning till var fältet hamnar i sip.xml.
+* Sparar paketet som en zip-fil som namnges "Arkivbildarnamn_Systemnamn_ÅÅÅÅ_MM_DDTHH_MM_SS.zip".

@@ -236,7 +236,7 @@ class FgsMaker:
                     filedict[filePath]['fileName'] = f
                     
 
-        # Samlar metadata om filerna och lägger till i dicten. (Track används för att skapa "Progressbar")
+        # Samlar metadata om filerna och lägger till i dicten.
         for  k, v in filedict.items():
             # Samlar metadata
             filePathFromDict = filedict[k]['path']
