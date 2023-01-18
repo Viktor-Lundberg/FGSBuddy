@@ -13,7 +13,7 @@ En grym liten FGS-paketerare för att skapa SIP-paket till e-arkiv.
 ---
 
 
-![](screen.PNG)
+![](screenv1_1.PNG)
 
 
 ## Features :star:
@@ -43,8 +43,9 @@ Exempel på strukturen i ett enkelt SIP-paket skapat av FGS-Buddy: <br>
 1. Fyll i relevant metadata för ditt SIP-paket.
 1. Välj vilken katalog som paketinnehållet (filerna) ska hämtas ifrån och om även underkataloger ska ingå i paketet.
 1. Välj eventuell metadatafil och schemafil.
+1. Välj output-katalog där Buddyn ska spara SIP-paketet.
 1. Klicka på "Skapa paket" - Buddyn ger feedback ifall något av de obligatoriska värdena saknas, annars genereras SIP-paketet.
-1. Hämta upp ditt färdiga SIP-paket i den katalog där du sparat applikationen.   
+1. Hämta upp ditt färdiga SIP-paket i vald katalog.   
 
 ---
 
@@ -62,4 +63,8 @@ Exempel på strukturen i ett enkelt SIP-paket skapat av FGS-Buddy: <br>
 * Martin Olsson - Har bidragit med funktionstester, idéer kring funktionalitet och feedback kring implementering av FGS-paketstruktur.
 * Dan Lundh - Agerat bollplank kring FGS-buddy.
 * Glasögon till ikonen hämtade från - http://clipart-library.com/clipart/1943208.htm  
+
+---
+<br>
+<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">Creative Commons Attribution-NonCommercial 4.0 International License</a>.
 
