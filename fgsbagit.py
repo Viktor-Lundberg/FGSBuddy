@@ -24,14 +24,15 @@ def buddybagit(inputfolder, destinationfolder, metadata, zipBag = True):
     # Skapar Bag
     packageTime = datetime.datetime.now().strftime('%Y_%m_%dT%H_%M_%S')
     bag = bagit.make_bag(destinationfolder, metadata)
-    # Genererar zip-fil om Bagen ska komprimeras
+    # Genererar zip-fil om Bagen ska komprimeras och tar bort BagIT-mappen.
     if zipBag:    
         try:
             shutil.make_archive(f'BagIT_{packageTime}','zip', destinationfolder)
+            shutil.rmtree(destinationfolder)
         except Exception as error:
             print(error)
-
-
+    
+        
 # Om skriptet körs direkt för testning...
 if __name__ == "__main__":
     print('testar BagIT')
@@ -39,4 +40,4 @@ if __name__ == "__main__":
     cwd = os.getcwd()
     destinationfolder = os.path.join(cwd, 'test22')
     inputfolder = os.path.join('C:\Viktor\korv')
-    buddybagit(inputfolder, destinationfolder, metadata)
+    buddybagit(inputfolder, destinationfolder, metadata, True)
