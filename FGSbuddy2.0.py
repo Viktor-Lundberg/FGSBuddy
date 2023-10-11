@@ -12,10 +12,11 @@ version = '1.5.0'
 # Current working directory
 cwd = os.getcwd()
 # Tema för layout
-sg.theme('greenMono')
+#sg.theme('greenMono')
+sg.theme('TealMono')
 
 
-def menyrad():
+def menyrad() -> list:
     """Skapar innehållet i menyraden genom att returnera en lista med värden som ska ingå i menyn"""
     meny = [ ['FGS-dokumentation', ['FGS-Paketstruktur v 1.2','FGS-Paketstruktur v 1.2 - tillägg','Schema v 1.2']],['Hjälp', ['Om FGS-Buddy']]]
     return meny
@@ -25,15 +26,23 @@ def mainmenu():
     # FIX Fönster som stänger---
 
     mainmenulayout = [
-        [sg.MenuBar(menyrad(), background_color='Pink')],
-        [sg.Text('FGS-Buddy', font='Arial 12 bold', size=30)],
-        [sg.Text(f'Version: {version}\nSkapad av: Viktor Lundberg\nLicens: Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)', font='Consolas 10')],
-        [sg.Text('FGS-Buddy på github',font='Consolas 10 underline', text_color='blue', enable_events=True, key='githublink')],
-        [sg.Text('', font='Arial 12 bold', size=30)],
-        [sg.Text('Release notes', font='Arial 10 bold', size=30)],
-        [[sg.Button('FGS', key='fgs', size=7), sg.Button('BagIT', key='bagit', size=7)]]
-    ]
-    mainmenuwindow = sg.Window('Om FGS-Buddy', mainmenulayout, icon="Buddy.ico")
+    [sg.MenuBar(menyrad(), background_color='Pink')],
+    [sg.Text('', font='Arial 12 bold', size=1)],
+    [sg.Image('Buddy.PNG')],
+    #[sg.Text(f'Version: {version}\nSkapad av: Viktor Lundberg\nLicens: Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)', font='Consolas 10')],
+    #[sg.Text('Välj format', font='Arial 10 bold', size=30)],
+    [sg.Text('', font='Arial 12 bold', size=1)],
+    [sg.Button('FGS 1.2', key='fgs', size=(20,3), font='Arial 10 bold'), 
+     sg.Button('BagIT', key='bagit', font='Arial 10 bold', size=(20,3)), 
+     sg.Button('FGS 2.0', key='fgs_2.0', font='Arial 10 bold', size=(20,3))],
+    [sg.Text(f'Version: {version}\nSkapad av: Viktor Lundberg\nLicens: Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)', font='Consolas 10')],
+
+]
+   
+    layout = [[sg.Column(mainmenulayout, element_justification='center')],
+                       ]
+    
+    mainmenuwindow = sg.Window(f'FGS-Buddy {version}', layout, icon="Buddy.ico")
     
     # Programloop för "huvudmenyn"
     while True:
@@ -60,7 +69,7 @@ def mainmenu():
                 bagitwindow()
 
 
-def clearinput(inputdict):
+def clearinput(inputdict: dict):
     """Funktion för att rensa alla input-fält för FGS 1.2-fönstret"""
 
     saveinput = ['folderinput', 'outputfolderinput']
@@ -235,8 +244,8 @@ def fgswindow():
 
 
 
-    # Skapar "huvudfönstret"
-    window = sg.Window(f'FGS-Buddy v {version}',layout, font='Consolas 10', icon="Buddy.ico", resizable=True, titlebar_background_color='green') 
+    # Skapar "FGS 1.2-fönstet"
+    window = sg.Window(f'FGS-Buddy {version}',layout, font='Consolas 10', icon="Buddy.ico", resizable=True, titlebar_background_color='green') 
 
 
     # Variabler för att kontrollera obligatoriska värden samt trigger för att visa/dölja alla element i layouten.
@@ -343,17 +352,26 @@ def bagitwindow():
         newvalue = f'{k}:{v}'
         defaultvalues.append(newvalue)
 
-    layout = [[sg.Input(default_text=cwd,tooltip="Välj katalog", key='folderinput'), sg.FolderBrowse('Välj katalog',key="folder", initial_folder=os.path.join(cwd))],
-        [sg.Text('Nyckel:'), sg.InputText(key='key')],
-        [sg.Text('Värde:'), sg.InputText(key='value')],
-        [sg.Button('Lägg till'), sg.Button('Ta bort'), sg.Button('Huvudmeny')],
+    layout = [
+        [sg.Text('Innehåll', font='Arial 12 bold', size=30)],
+        [sg.Text('Sökväg till katalog som ska paketeras')],
+        [sg.Input(default_text=cwd, tooltip="Välj katalog"), sg.FolderBrowse('Välj katalog', key="inputfolder", initial_folder=os.path.join(cwd))],
+        [sg.Text('Metadata', font='Arial 12 bold', size=30)],    
+        [sg.Text('Beskrivning:', size=13), sg.InputText(key='key')],
+        [sg.Text('Värde:', size=13), sg.InputText(key='value')],
+        [sg.Text('', size=48),sg.Button('Lägg till')],
         [sg.Text('Innehåll i "bag-info.txt" (metadata om paket och innehåll):')],
-        [sg.Listbox(values=[newvalue], size=(50, 5), key='output')],
-        [sg.Output(key='output2', size=(50, 10))],
-        [[sg.Button('print', key='print'), sg.Button('Skapa Bag')]]
+        [sg.Listbox(values=defaultvalues, size=(58, 5), key='output')],
+        [sg.Text('', size=42),sg.Button('Ta bort'), sg.Button('Rensa')],
+        
+        [sg.Text('Outputkatalog', font='Arial 12 bold', size=30)],
+        [[sg.Input(default_text=cwd,tooltip="Välj katalog"), sg.FolderBrowse('Välj katalog',key="destinationfolder", initial_folder=os.path.join(cwd))]],
+        
+        [sg.Output(key='output2', size=(58, 3), background_color='pink')],
+        [sg.Button('Huvudmeny'), sg.Text('') ,sg.Button('Skapa Bag')]
     ]
 
-    bagwindow = sg.Window('FGS-Buddy', layout)
+    bagwindow = sg.Window(f'FGS-Buddy {version}', layout, font='Consolas 10', icon="Buddy.ico")
     
     while True:
         event, values = bagwindow.read()
@@ -367,6 +385,8 @@ def bagitwindow():
                 if key and value:
                     metadata[key] = value
                     bagwindow['output'].update(values=[f"{k}: {v}" for k, v in metadata.items()])
+                    bagwindow['key'].update('')
+                    bagwindow['value'].update('')
             case 'Ta bort':
                 selected_item = values['output']
                 if selected_item:
@@ -376,31 +396,34 @@ def bagitwindow():
                         bagwindow['output'].update(values=[f"{k}: {v}" for k, v in metadata.items()])
                     except Exception as error:
                         print(error)
-            case 'print':
-                print(metadata)
             case 'Huvudmeny':
                 bagwindow.close()
                 mainmenu()
+                break
             case 'Skapa Bag':
-                inputfolder = values['folder']
-                #inputfolder = os.path.join('C:\Viktor\korv')
-                print(f'{inputfolder} här är cwd {cwd}')
+
+                if values['destinationfolder'] == '':
+                    destinationfolder = os.path.join(cwd)
+                else:
+                    destinationfolder = os.path.join(values['destinationfolder'])
+                
+                inputfolder = values['inputfolder']
+                if inputfolder == '':
+                    inputfolder = os.path.join(cwd)
+                
                 if inputfolder == cwd:
-                    print('SAMMA')
-                destinationfolder = os.path.join(cwd, 'test22')
-                #FGSbag.buddybagit(inputfolder,destinationfolder, metadata)
+                    print(f'Kan inte skapa Bag av Katalogen {inputfolder}!')
+                else:
+                    FGSbag.buddybagit(inputfolder, destinationfolder, metadata, True)
+            case 'Rensa':
+                metadata = {}
+                bagwindow['output'].update('')
+                bagwindow.refresh() 
                 
                 
-
-
-
-
-
-
-
-
 
 
 if __name__ == "__main__":
     #mainmenu()
     bagitwindow()
+    #fgswindow()

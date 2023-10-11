@@ -4,31 +4,32 @@ import os
 import shutil
 import datetime
 
-def buddybagit(inputfolder, destinationfolder, metadata, zipBag = True):
+def buddybagit(inputfolder: str, destinationfolder: str, metadata: dict, zipBag = True):
     
-    # Hämtar sökväg till filerna som ska ingå i Bagen.
-    try:
-        for root, dirs, files in os.walk(inputfolder):
-            for file in files:
-                filepath = os.path.join(root,file)
-                print(filepath)
-    except Exception as error:
-        print(error)
-    
+
+    # Skapar sökvägar för platsen att bygga BagIT-paketet
+    cwd = os.getcwd()
+    directoryName = os.path.join(cwd,'BagIT')
+
     # Flyttar filerna för att kunna skapa Bagen
     try:
-        shutil.copytree(inputfolder,destinationfolder)
+        shutil.copytree(inputfolder, directoryName)
     except Exception as error:
         print(error)
     
     # Skapar Bag
     packageTime = datetime.datetime.now().strftime('%Y_%m_%dT%H_%M_%S')
-    bag = bagit.make_bag(destinationfolder, metadata)
+    try:
+        bag = bagit.make_bag(directoryName, metadata)
+    except Exception as error:
+        print(error)
     # Genererar zip-fil om Bagen ska komprimeras och tar bort BagIT-mappen.
     if zipBag:    
         try:
-            shutil.make_archive(f'BagIT_{packageTime}','zip', destinationfolder)
-            shutil.rmtree(destinationfolder)
+            output = os.path.join(destinationfolder, f'Bag_{packageTime}')
+            shutil.make_archive(output,'zip', directoryName)
+            shutil.rmtree(directoryName)
+            print(f'BagIT-paketet Bag_{packageTime} skapades i katalogen {destinationfolder}')
         except Exception as error:
             print(error)
     
