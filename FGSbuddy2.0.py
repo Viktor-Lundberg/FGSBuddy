@@ -424,6 +424,6 @@ def bagitwindow():
 
 
 if __name__ == "__main__":
-    #mainmenu()
-    bagitwindow()
+    mainmenu()
+    #bagitwindow()
     #fgswindow()
