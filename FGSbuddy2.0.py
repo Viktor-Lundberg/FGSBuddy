@@ -18,7 +18,7 @@ sg.theme('TealMono')
 
 def menyrad() -> list:
     """Skapar innehållet i menyraden genom att returnera en lista med värden som ska ingå i menyn"""
-    meny = [ ['FGS-dokumentation', ['FGS-Paketstruktur v 1.2','FGS-Paketstruktur v 1.2 - tillägg','Schema v 1.2']],['Hjälp', ['Om FGS-Buddy']]]
+    meny = [ ['FGS-dokumentation', ['FGS-Paketstruktur v 1.2','FGS-Paketstruktur v 1.2 - tillägg','Schema v 1.2']],['BagIT-dokumentation',['Test', ['BagIT - RFC']]],['Hjälp', ['Om FGS-Buddy']]]
     return meny
 
 def mainmenu():
@@ -34,7 +34,7 @@ def mainmenu():
     [sg.Text('', font='Arial 12 bold', size=1)],
     [sg.Button('FGS 1.2', key='fgs', size=(20,3), font='Arial 10 bold'), 
      sg.Button('BagIT', key='bagit', font='Arial 10 bold', size=(20,3)), 
-     sg.Button('FGS 2.0', key='fgs_2.0', font='Arial 10 bold', size=(20,3))],
+     sg.Button('FGS 2.0', key='fgs_2.0', font='Arial 10 bold', size=(20,3), disabled=True)],
     [sg.Text(f'Version: {version}\nSkapad av: Viktor Lundberg\nLicens: Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)', font='Consolas 10')],
 
 ]
@@ -56,7 +56,9 @@ def mainmenu():
             case 'githublink':
                 webbrowser.open('https://github.com/Viktor-Lundberg/FGSBuddy')
             case 'fgs':
+                sg.Window.disappear(mainmenuwindow)
                 fgswindow()
+                sg.Window.reappear(mainmenuwindow)
             case 'FGS-Paketstruktur v 1.2':
                     webbrowser.open('https://riksarkivet.se/Media/pdf-filer/doi-t/FGS_Paketstruktur_RAFGS1V1_2.pdf')
             case 'FGS-Paketstruktur v 1.2 - tillägg':
@@ -64,9 +66,15 @@ def mainmenu():
             case 'Schema v 1.2':
                     webbrowser.open('http://xml.ra.se/e-arkiv/METS/CSPackageMETS.xsd')
             case 'Om FGS-Buddy':
+                sg.Window.disappear(mainmenuwindow)
                 buddywindow()
+                sg.Window.reappear(mainmenuwindow)
             case 'bagit':
+                sg.Window.disappear(mainmenuwindow)
                 bagitwindow()
+                sg.Window.reappear(mainmenuwindow)
+            case 'BagIT - RFC':
+                webbrowser.open('https://datatracker.ietf.org/doc/html/rfc8493')
 
 
 def clearinput(inputdict: dict):
@@ -232,7 +240,7 @@ def fgswindow():
         #[sg.Titlebar('FGS-Buddy v 1.1 - Viktor Lundberg', font='Consolas 10', background_color='Black')],
         #[sg.MenubarCustom(meny, bar_background_color='Pink', bar_text_color='Black')],
         
-        [sg.MenuBar(menyrad(), background_color='Pink')],
+        #[sg.MenuBar(menyrad(), background_color='Pink')],
         [sg.Column(paketinformation, vertical_alignment='top'), sg.Column(information)],
         [sg.Column(space)],
         [sg.Column(parter, vertical_alignment='top'), sg.Column(system, vertical_alignment='top'), sg.Column(innehall, vertical_alignment='top')],
@@ -368,7 +376,7 @@ def bagitwindow():
         [[sg.Input(default_text=cwd,tooltip="Välj katalog"), sg.FolderBrowse('Välj katalog',key="destinationfolder", initial_folder=os.path.join(cwd))]],
         
         [sg.Output(key='output2', size=(58, 3), background_color='pink')],
-        [sg.Button('Huvudmeny'), sg.Text('') ,sg.Button('Skapa Bag')]
+        [sg.Button('Huvudmeny'), sg.Text('') ,sg.Button('Skapa Bag', button_color='black on pink')]
     ]
 
     bagwindow = sg.Window(f'FGS-Buddy {version}', layout, font='Consolas 10', icon="Buddy.ico")
@@ -398,7 +406,6 @@ def bagitwindow():
                         print(error)
             case 'Huvudmeny':
                 bagwindow.close()
-                mainmenu()
                 break
             case 'Skapa Bag':
 

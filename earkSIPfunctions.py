@@ -13,7 +13,7 @@ class EarkMaker:
         print('Holy moly!')
 
     
-    def createMets(self):
+    def createMets(self, representations = False, schemas = False, descriptivemetadata = False, preservationmetadata = False):
         allvalues = True
         # Skapar namespaces
         ns = {
@@ -143,6 +143,46 @@ class EarkMaker:
         agentNote.text = 'VERSIONSNUMMER'
 
         # dmdSec Beskrivande metadata --> arkivredovisningsinformation etc
+        dmdSec = etree.SubElement(metsHdr, 'dmdSec')
+        if descriptivemetadata:
+            
+            dmdSec.set('ID', f'uuid-{str(uuid.uuid4())}')
+            dmdSec.set('CREATED', datetime.datetime.now().strftime('%Y-%m-%dT%H:%M:%S'))
+            dmdSec.set('STATUS', 'CURRENT')
+
+            for k, v in descriptivemetadata.items():
+                mdRef = etree.SubElement(dmdSec, 'mdRef')
+                mdRef.set('LOCTYPE', 'URL')
+                # XXXXXXX LÄGG TILL VARIABEL FÖR ATT VÄLJA VÄRDE! 
+                mdRef.set('MDTYPE', 'EAD')
+                mdRef.set(str(QName(ns.get('xlink'),'type')),'simple')
+                mdRef.set(str(QName(ns.get('xlink'),'href')), v['filelink'])
+                mdRef.set('MIMETYPE', v['mimetype'])
+                mdRef.set('SIZE', v['filesize'])
+                mdRef.set('CREATED', v['createdate'])
+                mdRef.set('CHECKSUM', v['hashvalue'])
+                mdRef.set('CHECKSUMTYPE', 'SHA-256')
+            
+        amdSec = etree.SubElement(metsHdr, 'amdSec')
+        if preservationmetadata:
+            
+            
+            for k, v in preservationmetadata.items():
+                rightsMD = etree.SubElement(amdSec, 'rightsMD')
+                rightsMD.set('ID', f'uuid-{str(uuid.uuid4())}')
+                rightsMD.set('STATUS', 'CURRENT')
+                mdRef = etree.SubElement(rightsMD, 'mdRef')
+                mdRef.set('LOCTYPE', 'URL')
+                # XXXXXXX LÄGG TILL VARIABEL FÖR ATT VÄLJA VÄRDE! 
+                mdRef.set('MDTYPE', 'PREMIS')
+                mdRef.set(str(QName(ns.get('xlink'),'type')),'simple')
+                mdRef.set(str(QName(ns.get('xlink'),'href')), v['filelink'])
+                mdRef.set('MIMETYPE', v['mimetype'])
+                mdRef.set('SIZE', v['filesize'])
+                mdRef.set('CREATED', v['createdate'])
+                mdRef.set('CHECKSUM', v['hashvalue'])
+                mdRef.set('CHECKSUMTYPE', 'SHA-256')  
+                
         # amdSec Administrativ metadata --> Bevarandemetadata etc
         # amdSec --> rightsMD rättigheter!
 
@@ -158,6 +198,9 @@ class EarkMaker:
         fileGrp.set('USE', 'Documentation')
         # FILER 
         
+        if representations:
+            print('HOOOOOLOLL')
+
         ''' Additional package info
         if additionalpackageinfo:
             pass 
@@ -192,8 +235,20 @@ class EarkMaker:
         xmlFile.write(f'METS.xml', xml_declaration=True, encoding='utf-8', pretty_print=True)
         #return xmlFile , objID
     
-    def collectFiles(self, directory, category = 'representation', subdirectorys = True):
+    def collectFiles(self, directory, category = 'representation', subdirectorys = True, singlefile = None) -> dict:
         filedict = {}
+        if singlefile:
+            filePath = os.path.join(directory,singlefile)
+            filedict[filePath] = filedict.get(singlefile,{'path':filePath})
+            filedict[filePath]['fileName'] = singlefile
+            filedict[filePath]['directory'] = directory
+            filedict[filePath]['category'] = category
+            
+            # Hämtar metadata om filerna --> Dict
+            filedict = self.collectMetadata(filedict)
+            
+            return filedict
+        
         if not os.path.exists(directory):
             print(f"Path doesn't exist {directory}")
             return 'Wrong path'
@@ -219,6 +274,10 @@ class EarkMaker:
                     filedict[filePath]['fileName'] = f
                     filedict[filePath]['directory'] = directory
                     filedict[filePath]['category'] = category      
+        
+        # Hämtar metadata om filerna med funktionen collectMetadata --> Dict
+        filedict = self.collectMetadata(filedict)
+        
         return filedict
     
     
@@ -238,7 +297,27 @@ class EarkMaker:
             # C:\mappen\undermapp1\undermapp2\Engöttigfil.txt --> undermapp1/undermapp2
             # file:///Content/undermapp1/undermapp2/engottigfil.txt'
             relativeFilePath = filePathFromDict.replace(filedict[k]['directory'],'').replace(originalFileName,'').replace('\\','/')
-            fileLink = f'file:///Content{relativeFilePath}{fgsFileName}'
+            
+    
+            # Lägger till rätt sökväg för filerna baserat på kategori
+            match filedict[k]['category']:
+                case 'representation':
+                    categoryPath = 'representations/rep_1/data'
+                case 'schema':
+                    categoryPath = 'schemas'
+                case 'descriptivemetadata':
+                    categoryPath = 'metadata/descriptive'
+                case 'othermetadata':
+                    categoryPath = 'metadata/other'
+                case 'preservationmetadata':
+                    categoryPath = 'metadata/preservation'
+                case 'documentation':
+                    categoryPath = 'documentation'    
+
+            
+            #fileLink = f'file:///Content{relativeFilePath}{fgsFileName}'
+            fileLink = f'file:///{categoryPath}{relativeFilePath}{fgsFileName}'
+            print(fileLink)
             
 
             # Lägger i dict           
@@ -315,9 +394,12 @@ class EarkMaker:
 
 if __name__ == '__main__':
     earkPackage = EarkMaker()
-    metsfile = earkPackage.createMets()
+    schema = earkPackage.collectFiles('C:\Viktor\Viktor_testar', 'schema', False)
+    files = earkPackage.collectFiles('C:\Viktor\Trams', category= 'representation', subdirectorys=False, singlefile="test.py")
+    descriptivemetadata = earkPackage.collectFiles('C:\Viktor\metadatatest', category='descriptivemetadata', subdirectorys=False)
+    preservationmetadata = earkPackage.collectFiles('C:\Viktor\preservationen', category='preservationmetadata')
+
+    
+
+    metsfile = earkPackage.createMets(representations=files, schemas=schema, descriptivemetadata=descriptivemetadata, preservationmetadata=preservationmetadata)
     earkPackage.createEarkPackage(metsfile)
-    dicten = earkPackage.collectFiles('C:\Viktor\Viktor_testar', 'schemas')
-    #print(dicten)
-    metadata = earkPackage.collectMetadata(dicten)
-    print(metadata)
